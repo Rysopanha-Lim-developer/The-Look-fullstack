@@ -1,0 +1,47 @@
+.suppliersTitle{
+    margin: .5rem 0 1rem .5rem;
+    font-family: var(--font-roboto);
+    font-size: 2rem;
+    font-weight: 700;
+}
+.infiniteAnimationContainer{
+    width: 100%;
+}
+.infinteCards{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: auto;   
+    mask-image: linear-gradient(
+        to right,
+        transparent,
+        rgb(0, 0, 0) 15%,
+        rgb(0, 0, 0) 85%,
+        transparent
+    );
+}
+.infinteCards::-webkit-scrollbar{
+    display: none;
+}
+.infinteCardGroup{
+    display: flex;
+    gap: 1rem;
+    padding-right: 1em;
+    animation: infinteScroll 20s infinite linear;
+}
+.eachInfiniteCard{
+    flex: 0 0 200px;
+    object-position: center;
+    object-fit: contain;
+
+    img{
+        width: 100%;
+        height:auto;
+    }
+}
+
+@keyframes infinteScroll {
+    from {translate: 0;}
+    to {translate: -100%;}
+}
