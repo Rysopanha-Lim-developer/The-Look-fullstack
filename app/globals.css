@@ -61,6 +61,25 @@
       @apply scale-x-100;
     }
   }
+  .Footer {
+    @apply bg-black text-white flex items-start justify-center p-2.5 mt-5;
+    column-gap: 10rem;
+  }
+  .media {
+    @apply list-none;
+
+    /* Styling for individual list items */
+    li {
+      @apply cursor-pointer text-base font-bold flex items-center justify-start mb-2.5;
+      font-family: var(--font-main);
+      column-gap: 10px;
+
+      /* Header item (first-child) overrides */
+      &:first-child {
+        @apply cursor-default text-[1.1rem] mb-2.5;
+      }
+    }
+  }
 }
 
 
