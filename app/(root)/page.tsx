@@ -2,6 +2,6 @@ import InfiniteLogoScroll from "../components/InfiniteLogoScroll/InfiniteLogoScr
 
 export default function Home() {
     return (<>
-        <InfiniteLogoScroll />
+        {/* <InfiniteLogoScroll /> */}
     </>);
 }

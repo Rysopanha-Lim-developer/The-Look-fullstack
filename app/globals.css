@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+
 :root {
   --background: #ffffff;
   --foreground: #121212;
@@ -36,6 +37,29 @@
   h6 {
     font-size: 0.67rem;  /* ~10.7px */
     font-weight: 700;    /* bold */
+  }
+
+  .nav-bar{
+    @apply flex justify-start items-center w-full
+  }
+  .nav-bar-ul{
+    @apply list-none flex items-center justify-evenly
+  }
+  .nav-link {
+    @apply inline-block relative no-underline font-black transition-all;
+    font-size: 1.5rem;
+    font-family: var(--font-roboto);
+
+    /* The ::after underline animation */
+    &::after {
+      content: '';
+      @apply absolute w-full h-0.5 bottom-0 left-0 bg-black scale-x-0 origin-bottom-left transition-transform duration-250 ease-out;
+    }
+
+    /* The hover state */
+    &:hover::after {
+      @apply scale-x-100;
+    }
   }
 }
 
