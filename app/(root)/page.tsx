@@ -1,11 +1,64 @@
 import InfiniteLogoScroll from "../components/InfiniteLogoScroll/InfiniteLogoScroll";
 import Image from "next/image";
+import DisplayCard, { DisplayCardProps } from "../components/DisplayCard/DisplayCard";
 
+import { dbConnection } from "../lib/dbConnection";
+import { ProductModel } from "../models/product.model";
+import { connection } from "next/server";
+/*
+`connection()` is Next.js 16's primitive (under the new `cacheComponents` model)
+that tells Next: "this part of the tree must be rendered dynamically,
+per-request — do NOT try to prerender/cache it as static HTML."
+It replaces the old `export const dynamic = 'force-dynamic'` route config.
+*/
+import { Suspense } from "react";
+
+
+//main page body
 export default function Home() {
     return (<>
         <div>
             <Image src="/assets/Banner/BigSaleBanner.jpg" alt="Sale banner" width={1200} height={100} className="w-dvw h-auto" />
         </div>
         <InfiniteLogoScroll />
+
+        <Suspense fallback={<ProductsSkeleton />}>
+            <Products />
+        </Suspense>
+        {/* <Suspense> is the boundary that tells Next.js:
+            "Everything inside here is allowed to be dynamic/slow.
+            Show `fallback` immediately as part of the static shell,
+            then stream in the real content once it's ready."
+            Without this boundary, Next has nowhere to "cut" the tree,
+            so the dynamic data access inside <Products /> would force
+            the ENTIRE page to block on every request (the error you hit). */}
     </>);
+}
+
+//Make db connection and query here instead
+async function Products() {
+    await connection()
+    /*
+    Opts this specific subtree (not the whole route) into dynamic rendering.
+    This is what actually satisfies Next's requirement — every dynamic
+    data access must happen inside a Suspense-wrapped component, not
+    directly in the top-level page component. 
+    */
+
+    await dbConnection()
+    const products = await ProductModel.find({price: 100}).sort({ price: -1 }).lean()
+
+    return (
+        <div>
+            {products.map((eachProduct) => {
+                return(
+                    <DisplayCard key={eachProduct._id} data={eachProduct} />
+                )
+            })}
+        </div>
+    )
+}
+
+function ProductsSkeleton() {
+    return <div>Loading products...</div>
 }

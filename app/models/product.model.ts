@@ -2,7 +2,6 @@ import { Schema, model, models, Document, ObjectId, Types } from "mongoose";
 import mongoose from "mongoose";
 
 export type Product = {
-    _id: Types.ObjectId,
     brand: string,
     name: string,
     color: string,
@@ -14,11 +13,19 @@ export type Product = {
 
 const ProductSchema = new Schema<Product>(
     //In future project should add a SKU  (Stock Keeping Unit)
+    /*
+    ###Purpose of sku
+    1. Tracking exact inventory counts
+    2. Telling apart identical-looking products (Ex:same name, price, brand; but not color)
+    3. Communicating with the outside world (shipping...)
+    4. Fast, human-searchable lookup
+    5. Preventing your own inventory chaos
+    */
     //follow this format [BRAND]-[CATEGORY]-[STYLE/MODEL]-[COLOR]-[SIZE]
     //Example: sku: { type: String, required: true, unique: true, uppercase: true }, 
     // "PS-SUN-3308S-MBK-OS." 
-    // Sku break down
     /*
+    ###Sku break down
     PS: Brand (Persol)
     SUN: Category (Sunglasses)3308S: 
     Model/Style (From PO3308S)MBK: 
@@ -26,7 +33,6 @@ const ProductSchema = new Schema<Product>(
     OS: Size (One Size - standard for accessories when size is missing)
     */
     {
-        _id: {type: Types.ObjectId, required: true}, //this _id if for item look up
         brand: {type: String, required: true},
         name: {type: String, required: true},
         color: {type: String, required: true},
@@ -36,6 +42,15 @@ const ProductSchema = new Schema<Product>(
         slug: {type: String, required: true, unique:true}, //this id can be used as a slug in url
     }
 );
+
+// --- Indexes can pre-sort the data in accending order(1) and deccending order(-1)
+
+ProductSchema.index({ name: "text", brand: "text" }); // enables text search across name + brand
+
+ProductSchema.index({ brand: 1, price: -1 });   /*fast filter by brand, sorted by price
+                                                and when using the .find({brand:""}) or .find({price:""})
+                                                or .find({theFieldAvailable in the index: ""})
+                                                it will perform instance look => faster query*/ 
 
 const productDB = mongoose.connection.useDb("Clothing-Datas", {useCache: true});
 
