@@ -4,6 +4,17 @@
 :root {
   --background: #ffffff;
   --foreground: #121212;
+
+  /* bg color */
+    --header-btn : rgb(35, 30, 30);
+    --header-btn-hover : rgba(56, 55, 55, 1);
+    --header-btn-active : rgba(36, 36, 36, 0.7);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-roboto), sans-serif;
 }
 
 @theme inline {
@@ -17,26 +28,38 @@
   h1 {
     font-size: 2rem;     /* 32px */
     font-weight: 700;    /* bold */
+    font-family: var(--font-roboto);
+    margin: .5rem 0 1rem .5rem;
   }
   h2 {
     font-size: 1.5rem;   /* 24px */
     font-weight: 700;    /* bold */
+    font-family: var(--font-roboto);
+    margin: .5rem 0 1rem .5rem;
   }
   h3 {
     font-size: 1.17rem;  /* ~18.7px */
     font-weight: 700;    /* bold */
+    font-family: var(--font-roboto);
+    margin: .5rem 0 1rem .5rem;
   }
   h4 {
     font-size: 1rem;     /* 16px */
     font-weight: 700;    /* bold */
+    font-family: var(--font-roboto);
+    margin: .5rem 0 1rem .5rem;
   }
   h5 {
     font-size: 0.83rem;  /* ~13.3px */
     font-weight: 700;    /* bold */
+    font-family: var(--font-roboto);
+    margin: .5rem 0 1rem .5rem;
   }
   h6 {
     font-size: 0.67rem;  /* ~10.7px */
     font-weight: 700;    /* bold */
+    font-family: var(--font-roboto);
+    margin: .5rem 0 1rem .5rem;
   }
 
   .nav-bar{
@@ -71,7 +94,7 @@
     /* Styling for individual list items */
     li {
       @apply cursor-pointer text-base font-bold flex items-center justify-start mb-2.5;
-      font-family: var(--font-main);
+      font-family: var(--font-roboto);
       column-gap: 10px;
 
       /* Header item (first-child) overrides */
@@ -80,11 +103,107 @@
       }
     }
   }
-}
+  .allProductsSubSection {
+    @apply w-full overflow-x-auto scroll-smooth flex flex-col px-7.5 py-1.25 my-5 mx-auto gap-x-5;
+    scroll-snap-type: x mandatory;
+    scroll-marker-group: after;
+  }
 
+  .allProductsSubSection::scroll-marker-group {
+    @apply flex justify-center gap-2;
+  }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-roboto), sans-serif;
+  .allProductsSubSection::-webkit-scrollbar {
+    @apply hidden;
+  }
+
+  .allProductsSubSection::scroll-button(right),
+  .allProductsSubSection::scroll-button(left) {
+    @apply text-black h-15 w-15 rounded-full outline-none border-none fixed bg-white/80 backdrop-blur-md cursor-pointer -translate-x-1/2;
+    content: "➔";
+    position-area: right center;
+  }
+
+  .allProductsSubSection::scroll-button(left) {
+    content: "➔";
+    position-area: left center;
+    @apply translate-x-1/2 rotate-180;
+  }
+
+  .allProductsSubSection::scroll-button(right):disabled,
+  .allProductsSubSection::scroll-button(left):disabled {
+    @apply opacity-50 cursor-default;
+  }
+
+  .displayCard {
+    @apply border border-black rounded-lg flex justify-start items-center;
+    scroll-snap-align: start;
+    flex: 0 0 22%;
+    height: 80dvh;
+
+    a {
+      @apply w-full text-center;
+    }
+  }
+
+  .displayCard::scroll-marker {
+    @apply h-[0.8em] w-[0.8em] rounded-full bg-gray-500/80;
+    content: '';
+  }
+
+  .displayCard::scroll-marker:target-current {
+    @apply bg-gray-500;
+  }
+
+  .cardWrapper {
+    @apply flex flex-col gap-y-2.5 text-center items-center justify-between w-full h-full px-3.75 py-2.5;
+
+    button {
+      @apply cursor-pointer px-1.5 py-1.25 font-semibold outline-none border-2 rounded-md ;
+      font-family: var(--font-roboto);
+      font-size: calc(var(--font-size-nav) - 30%);
+      background-color: var(--header-btn);
+      color: rgb(255, 255, 255);
+
+      a {
+        @apply no-underline ;
+      }
+      &:hover {
+        background-color: var(--header-btn-hover);
+      }
+      &:active {
+        background-color: var(--header-btn-active);
+      }
+    }
+  }
+
+  .cardImageWrapper {
+    @apply w-full h-max overflow-hidden;
+
+    img {
+      @apply object-contain object-center w-[90%] h-full;
+    }
+  }
+
+  .cardText {
+    @apply w-full;
+
+    span, p {
+      @apply font-bold text-xl;
+      font-family: var(--font-roboto);
+    }
+
+    .discountedPrice {
+      @apply block text-red-600;
+    }
+
+    .originalPrice {
+      span {
+        @apply block line-through text-gray-400;
+      }
+      p {
+        @apply text-base;
+      }
+    }
+  }
 }

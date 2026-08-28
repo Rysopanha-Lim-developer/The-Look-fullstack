@@ -1,6 +1,7 @@
 import InfiniteLogoScroll from "../components/InfiniteLogoScroll/InfiniteLogoScroll";
 import Image from "next/image";
 import DisplayCard, { DisplayCardProps } from "../components/DisplayCard/DisplayCard";
+import LoadingBar from "../components/LoadingBar/LoadingBar";
 
 import { dbConnection } from "../lib/dbConnection";
 import { ProductModel } from "../models/product.model";
@@ -46,19 +47,24 @@ async function Products() {
     */
 
     await dbConnection()
-    const products = await ProductModel.find({price: 100}).sort({ price: -1 }).lean()
+    const products = await ProductModel.find({price: 100}).sort({ name: -1 }).lean()
 
     return (
-        <div>
-            {products.map((eachProduct) => {
-                return(
-                    <DisplayCard key={eachProduct._id} data={eachProduct} />
-                )
-            })}
-        </div>
+        <>
+            <h1>New Product</h1>
+            <section className="allProductsSubSection">
+                <div className="w-full h-auto flex gap-5 mt-o mb-0 ml-2.5 mr-2.5">
+                    {products.map((eachProduct) => {
+                        return(
+                            <DisplayCard key={eachProduct._id} data={eachProduct} />
+                        )
+                    })}
+                </div>
+            </section>
+        </>
     )
 }
 
 function ProductsSkeleton() {
-    return <div>Loading products...</div>
+    return (<LoadingBar />)
 }

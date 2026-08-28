@@ -3,7 +3,7 @@ import styles from "../InfiniteLogoScroll/InfiniteLogoScroll.module.css"
 export default function InfiniteLogoScroll(){
     return(
         <>
-        <h2 className={styles.suppliersTitle}>Our suppliers</h2>
+        <h1>Our suppliers</h1>
         <div className={styles.infiniteAnimationContainer}>
             <div className={styles.infinteCards}>
                 <div className={styles.infinteCardGroup}>
