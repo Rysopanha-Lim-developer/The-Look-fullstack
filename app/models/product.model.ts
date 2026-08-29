@@ -45,7 +45,7 @@ const ProductSchema = new Schema<Product>(
 
 // --- Indexes can pre-sort the data in accending order(1) and deccending order(-1)
 
-ProductSchema.index({ name: "text", brand: "text" }); // enables text search across name + brand
+ProductSchema.index({ name: "text", brand: "text", slug: "text" }); // enables text search across name + brand
 
 ProductSchema.index({ brand: 1, price: -1 });   /*fast filter by brand, sorted by price
                                                 and when using the .find({brand:""}) or .find({price:""})

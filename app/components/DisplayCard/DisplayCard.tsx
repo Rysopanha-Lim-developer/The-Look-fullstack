@@ -6,7 +6,6 @@ export type DisplayCardProps = {
 }
 
 export default function DisplayCard({data}: DisplayCardProps){
-    console.log(data.name, data.price, data.image)
     return(
         <article className="displayCard">
             <div className="cardWrapper">
@@ -18,7 +17,9 @@ export default function DisplayCard({data}: DisplayCardProps){
                         <p>{data.name}</p>
                         <p>${data.price}</p>
                     </div>
-                    <button>See detail</button>
+                    <a href={`/${data.slug}`}>
+                        <button>See detail</button>
+                    </a>
                 </div>
             </div>
         </article>

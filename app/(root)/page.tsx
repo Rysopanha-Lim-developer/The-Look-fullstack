@@ -47,7 +47,7 @@ async function Products() {
     */
 
     await dbConnection()
-    const products = await ProductModel.find({price: 100}).sort({ name: -1 }).lean()
+    const products = await ProductModel.find({price: 100}).sort({ name: 1 }).lean()
 
     return (
         <>
