@@ -2,8 +2,8 @@
 import { DetailProps } from "@/app/(root)/[slug]/page";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import LoadingBar from "../LoadingBar/LoadingBar";
 import { Product } from "@/app/models/product.model";
+import ProductDetailSkeleton from "../ProductDetailSkeleton/ProductDetailSkeleton";
 
 export default function ProductDetail({props}: DetailProps) {
     const [detail, setDetail] = useState<Product | null>(null);
@@ -29,11 +29,11 @@ export default function ProductDetail({props}: DetailProps) {
         getDetails()
     },[props])
 
-    if (loading) return <LoadingBar />;
+    if (loading) return <ProductDetailSkeleton />;
     if (!detail) return <h1>Product can't be fetch</h1>;
 
     return(
-        <section className="flex w-full h-[80dvh] items-center justify-evenly">
+        <section className="flex flex-col w-full h-[80dvh] items-center justify-evenly">
             <div className="flex w-full h-[80dvh] items-center justify-evenly">
                 <div>
                     <Image src={detail.image} alt={detail.image} width={300} height={500} />
@@ -61,8 +61,13 @@ export default function ProductDetail({props}: DetailProps) {
                     </div>
                 </div>
             </div>
-            <div>
-                <button></button>
+            <div className=" flex w-full justify-center gap-5">
+                <button className="btn">
+                    <p>Add to cart</p>
+                </button>
+                <button className="btn">
+                    <p>Add to wishlist</p>
+                </button>
             </div>
         </section>
     )

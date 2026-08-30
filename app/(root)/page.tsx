@@ -23,7 +23,7 @@ export default function Home() {
         </div>
         <InfiniteLogoScroll />
 
-        <Suspense fallback={<ProductsSkeleton />}>
+        <Suspense fallback={<LoadingBar />}>
             <Products />
         </Suspense>
         {/* <Suspense> is the boundary that tells Next.js:
@@ -63,8 +63,4 @@ async function Products() {
             </section>
         </>
     )
-}
-
-function ProductsSkeleton() {
-    return (<LoadingBar />)
 }

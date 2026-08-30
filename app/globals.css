@@ -161,7 +161,6 @@ body {
     button {
       @apply cursor-pointer px-1.5 py-1.25 font-semibold outline-none border-2 rounded-md ;
       font-family: var(--font-roboto);
-      font-size: calc(var(--font-size-nav) - 30%);
       background-color: var(--header-btn);
       color: rgb(255, 255, 255);
 
@@ -206,4 +205,21 @@ body {
       }
     }
   }
+
+  .btn {
+      @apply cursor-pointer px-1.75 py-1.5 font-semibold outline-none border-2 rounded-md flex items-center justify-center ;
+      font-family: var(--font-roboto);
+      background-color: var(--header-btn);
+      color: rgb(255, 255, 255);
+
+      a {
+        @apply no-underline ;
+      }
+      &:hover {
+        background-color: var(--header-btn-hover);
+      }
+      &:active {
+        background-color: var(--header-btn-active);
+      }
+    }
 }

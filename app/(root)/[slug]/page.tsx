@@ -1,8 +1,8 @@
 import { Product } from "@/app/models/product.model";
-import LoadingBar from "@/app/components/LoadingBar/LoadingBar";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import ProductDetail from "@/app/components/ProductDetails/ProductDetails";
+import ProductDetailSkeleton from "@/app/components/ProductDetailSkeleton/ProductDetailSkeleton";
 
 
 export type PageParams = {
@@ -15,7 +15,7 @@ export type DetailProps = {
 
 export default function DetailPage({params}: PageParams){
     return(
-        <Suspense fallback={<DetailsSkeleton/>}>'
+        <Suspense fallback={<ProductDetailSkeleton/>}>'
             <Details params={params}/>
         </Suspense>
     )
@@ -27,8 +27,4 @@ async function Details({params}:PageParams) {
     return(
         <ProductDetail props={productSlug}/>
     )
-}
-
-function DetailsSkeleton() {
-    return (<LoadingBar />)
 }
