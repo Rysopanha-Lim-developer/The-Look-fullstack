@@ -2,8 +2,7 @@ import { Product } from "@/app/models/product.model";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import ProductDetail from "@/app/components/ProductDetails/ProductDetails";
-import ProductDetailSkeleton from "@/app/components/ProductDetailSkeleton/ProductDetailSkeleton";
-
+import ProductDetailSkeleton from "@/app/components/ProductDetailLoading/ProductSkeleton";
 
 export type PageParams = {
     params: Promise<Pick<Product, "slug">>

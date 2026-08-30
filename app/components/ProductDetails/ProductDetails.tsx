@@ -3,11 +3,12 @@ import { DetailProps } from "@/app/(root)/[slug]/page";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Product } from "@/app/models/product.model";
-import ProductDetailSkeleton from "../ProductDetailSkeleton/ProductDetailSkeleton";
+import ProductDetailSkeleton from "../ProductDetailLoading/ProductSkeleton";
+
 
 export default function ProductDetail({props}: DetailProps) {
-    const [detail, setDetail] = useState<Product | null>(null);
-    const [loading, setLoading] = useState(true);
+    let [detail, setDetail] = useState<Product | null>(null);
+    let [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function getDetails() {

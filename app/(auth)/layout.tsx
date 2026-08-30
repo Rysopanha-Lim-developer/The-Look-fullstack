@@ -7,7 +7,7 @@ export default function RootLayout({children}: {children: React.ReactNode}){
             <header>
                 
             </header>
-            <main>
+            <main className="bg-[rgba(143,137,137,0.56)] backdrop-blur-sm">
                 {children}
             </main>
             <footer className="Footer">
