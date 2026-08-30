@@ -34,10 +34,10 @@ export default function ProductDetail({props}: DetailProps) {
     if (!detail) return <h1>Product can't be fetch</h1>;
 
     return(
-        <section className="flex flex-col w-full h-[80dvh] items-center justify-evenly">
+        <section className="flex flex-col w-full h-[90dvh] items-center justify-evenly">
             <div className="flex w-full h-[80dvh] items-center justify-evenly">
                 <div>
-                    <Image src={detail.image} alt={detail.image} width={300} height={500} />
+                    <Image src={detail.image} alt={detail.image} width={300} height={400} />
                 </div>
                 <div>
                     <div className="leading-5">

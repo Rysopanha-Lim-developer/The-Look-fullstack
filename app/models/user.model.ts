@@ -14,7 +14,7 @@ const UserSchema = new Schema<User>(
         username:{
             type:String, 
             required: [true, "Username is required"],     
-            minlength:[6, "Username must be at lease 6 characters"], 
+            minlength:[5, "Username must be at lease 5 characters"], 
             maxlength:[12, "Username must not exced 12 characters"],
             unique: true,
         }, 
