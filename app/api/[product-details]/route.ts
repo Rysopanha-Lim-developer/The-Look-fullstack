@@ -8,11 +8,8 @@ export async function GET(request:Request ,{params}: PageParams){
 
     if (!productDetail) {
         return Response.json({ error: "Not found" ,
-            a: typeof slug,
             status: 404
         });
     }
-
-    console.log(productDetail)
     return Response.json(productDetail);
 }
