@@ -32,10 +32,10 @@ export default function RegisterPage(){
         setApiFeedback(apiFeedback)
     }
     return(
-        <section className="w-full h-dvh flex flex-col items-center justify-start">
+        <section className="w-full h-100% flex flex-col items-center justify-start">
             <h1>Welcome to The Look</h1>
             <h2>Please register here</h2>
-            <article className="w-[70%] h-[90dvh] flex justify-center items-start">
+            <article className="w-[70%] h-[90dvh] flex flex-col justify-start items-center gap-y-4">
                 <form onSubmit={handelRegister} 
                     className="w-[50%] rounded-lg border-2 px-2.5 py-5 flex flex-col gap-2.5 bg-[rgb(255,255,255)]">
                     <div className="w-full flex justify-between gap-5">
@@ -56,11 +56,22 @@ export default function RegisterPage(){
                         </button>
                     </div>
                 </form>
+                {apiFeedback !== (null)  ? 
+                    (
+                        <div className="flex flex-col items-center justify-center">
+                            <div>
+                                <h4>{apiFeedback?.message}</h4>
+                            </div>
+                            <a href="/">
+                                <button className="btn">Return to Homepage</button>
+                            </a>
+                        </div>
+                    ):
+                    (
+                        <div></div>
+                    )
+                }
             </article>
-            <div>
-                <p>{apiFeedback?.message}</p>
-                <p>{apiFeedback?.status}</p>
-            </div>
         </section>
     )
 }

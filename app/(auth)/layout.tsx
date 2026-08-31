@@ -10,7 +10,7 @@ export default function RootLayout({children}: {children: React.ReactNode}){
             <main className="bg-[rgba(143,137,137,0.56)] backdrop-blur-sm">
                 {children}
             </main>
-            <footer className="Footer">
+            <footer className="Footer mt-0">
                 <ul className="media">
                     <li>Follow Us</li>
                     <li ><Image src="/assets/Logo/Facebook.svg"  alt="Facebook" width={24} height={24} /> The Look Cambodia</li>
