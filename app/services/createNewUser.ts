@@ -5,6 +5,16 @@ import { dbConnection } from "../lib/dbConnection";
 export async function createNewUser(request:NextRequest) {
     try{
         const {username, email, password} = await request.json();
+
+        if(
+            !username || !email || !password ||
+            username == " " || email == " " || password == " "
+        ){
+            return NextResponse.json(
+                { message: "Please fill out the required Information"},
+                { status: 500 }
+            ); 
+        }
         await dbConnection()
         await UserModel.create({username, email, password})
 

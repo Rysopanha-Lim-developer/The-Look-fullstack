@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ApiFeedback } from "@/app/lib/Types/generalTypes.module";
 
 
@@ -9,6 +9,9 @@ export default function RegisterPage(){
     let [email, setEmail] = useState("");
     let [password, setPassword] = useState("");
     let [apiFeedback, setApiFeedback] = useState<ApiFeedback | null>(null);
+
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+    const isEmailValid = emailRegex.test(email);
 
     function handleChangeUsername(e:any){
         setUsername(e.target.value);
@@ -38,17 +41,73 @@ export default function RegisterPage(){
             <article className="w-[70%] h-[90dvh] flex flex-col justify-start items-center gap-y-4">
                 <form onSubmit={handelRegister} 
                     className="w-[50%] rounded-lg border-2 px-2.5 py-5 flex flex-col gap-2.5 bg-[rgb(255,255,255)]">
-                    <div className="w-full flex justify-between gap-5">
+                    <div className="w-full flex flex-col justify-between gap-1">
                         <label className="w-[30%]" htmlFor="username">Username</label>
-                        <input type="text" name="username" className="rounded-sm w-[70%] px-1" minLength={5} maxLength={12} required value={username} onChange={handleChangeUsername}/>
+                        <div className="flex flex-col w-[70%] justify-center items-end">
+                            <input type="text" name="username" className="rounded-sm w-full px-1" minLength={5} maxLength={12} required value={username} placeholder="thelook123" onChange={handleChangeUsername} 
+                            style={
+                                {
+                                    border: username.length === 0 ? `1.5px solid black` :
+                                            username.length < 5 ? `1.5px solid rgb(220, 38, 38)` : 
+                                            `1.5px solid rgb(22, 163, 74)`
+                                }
+                            } />
+                            <p className="text-xs self-start" 
+                                style={
+                                    {
+                                        color: username.length === 0 ? `black` :
+                                            username.length < 5 ? `rgb(220, 38, 38)` : 
+                                            `rgb(22, 163, 74)`
+                                    }
+                                }>
+                                Username must be between 5 characters and 12 characters
+                            </p>
+                        </div>
                     </div>
-                    <div className="w-full flex justify-between gap-5">
+                    <div className="w-full flex flex-col justify-between gap-1">
                         <label className="w-[30%]" htmlFor="email">Email</label>
-                        <input type="email" name="email" className="rounded-sm w-[70%] px-1" required value={email} onChange={handleChangeEmail}/>
+                        <div className="flex flex-col w-[70%] justify-center items-end">
+                            <input type="email" name="email" className="rounded-sm w-full px-1" required value={email} placeholder="thelook168@gmail.com" onChange={handleChangeEmail}
+                            style={
+                                {
+                                    border: email.length === 0 ? `1.5px solid black` :
+                                            isEmailValid ? `1.5px solid rgb(22, 163, 74)`: `1.5px solid rgb(220, 38, 38)`
+                                }
+                            }
+                            />
+                            <p className="text-xs self-start" 
+                                style={
+                                    {
+                                    color: email.length === 0 ? `black` :
+                                            isEmailValid ? `rgb(22, 163, 74)`: `rgb(220, 38, 38)`
+                                    }
+                                }>
+                                Please enter your email address
+                            </p>
+                        </div>
                     </div>
-                    <div className="w-full flex justify-between gap-5">
+                    <div className="w-full flex flex-col justify-between gap-1">
                         <label className="w-[30%]" htmlFor="password">Password</label>
-                        <input type="text" name="password" className="rounded-sm w-[70%] px-1" minLength={4} maxLength={8} required value={password} onChange={handleChangePassword}/>
+                        <div className="flex flex-col w-[70%] justify-center items-end">
+                            <input type="text" name="password" className="rounded-sm w-full px-1" minLength={4} maxLength={8} required value={password} placeholder="theLook4EV" onChange={handleChangePassword}  
+                            style={
+                                {
+                                    border: password.length === 0 ? `1.5px solid black` :
+                                            password.length < 4 ? `1.5px solid rgb(220, 38, 38)` : 
+                                            `1.5px solid rgb(22, 163, 74)`
+                                }
+                            } />
+                            <p className="text-xs self-start" 
+                                style={
+                                    {
+                                    color: password.length === 0 ? `black` :
+                                            password.length < 4 ? `rgb(220, 38, 38)` : 
+                                            `rgb(22, 163, 74)`
+                                    }
+                                }>
+                                Password must be between 4 characters and 8 characters
+                            </p>
+                        </div>
                     </div>
                     <div>
                         <button type="submit" className="btn">
