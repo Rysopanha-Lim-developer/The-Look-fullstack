@@ -1,14 +1,17 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ApiFeedback } from "@/app/lib/Types/generalTypes.module";
+import { useRouter } from "next/navigation";
 
 
 export default function RegisterPage(){
+
+    const route = useRouter();
     let [username, setUsername] = useState("");
     let [email, setEmail] = useState("");
     let [password, setPassword] = useState("");
-    let [apiFeedback, setApiFeedback] = useState<ApiFeedback | null>(null);
+    let [apiFeedback, setApiFeedback] = useState<ApiFeedback | any>({});
 
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     const isEmailValid = emailRegex.test(email);
@@ -33,6 +36,9 @@ export default function RegisterPage(){
         });
         const apiFeedback = await res.json();
         setApiFeedback(apiFeedback)
+        if(apiFeedback.status === 201){
+            route.push("/");
+        }
     }
     return(
         <section className="w-full h-100% flex flex-col items-center justify-start">
@@ -111,25 +117,14 @@ export default function RegisterPage(){
                     </div>
                     <div>
                         <button type="submit" className="btn">
-                            Create account
+                            <a href= {apiFeedback.status === 201 ? "/": "/register"}>
+                            Create account</a>
                         </button>
                     </div>
                 </form>
-                {apiFeedback !== (null)  ? 
-                    (
-                        <div className="flex flex-col items-center justify-center">
-                            <div>
-                                <h4>{apiFeedback?.message}</h4>
-                            </div>
-                            <a href="/">
-                                <button className="btn">Return to Homepage</button>
-                            </a>
-                        </div>
-                    ):
-                    (
-                        <div></div>
-                    )
-                }
+                <div>
+                    <p>{apiFeedback.message}</p>
+                </div>
             </article>
         </section>
     )

@@ -11,21 +11,28 @@ export async function createNewUser(request:NextRequest) {
             username == " " || email == " " || password == " "
         ){
             return NextResponse.json(
-                { message: "Please fill out the required Information"},
-                { status: 500 }
+                { 
+                    message: "Please fill out the required Information",
+                    status: 400
+                }
+
             ); 
         }
         await dbConnection()
         await UserModel.create({username, email, password})
 
         return NextResponse.json(
-            { message: "Registered successfully"},
-            { status: 201 }
+            { 
+                message: "Registered successfully",
+                status: 201
+            },
         ); 
     }catch (error: any) {
         return NextResponse.json(
-        { error: error.message || "Something went wrong" },
-        { status: 500 }
+        { 
+            error: error.message || "Something went wrong",
+            status: 500
+        },
         );
     }
 }
