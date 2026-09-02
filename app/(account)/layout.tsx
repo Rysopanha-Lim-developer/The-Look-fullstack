@@ -26,7 +26,9 @@ export default function AccountLayout({children}: {children: React.ReactNode}){
                         <a href=""><h3 className="nav-link">Log out</h3></a>
                     </div>
                 </section>
-                {children}
+                <section className="w-[70%] flex flex-col pt-2.5">
+                    {children}
+                </section>
             </main>
             <footer className="Footer mt-0">
                 <ul className="media">

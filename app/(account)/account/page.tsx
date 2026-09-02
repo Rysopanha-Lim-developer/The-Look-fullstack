@@ -3,6 +3,7 @@ import { dbConnection } from "@/app/lib/dbConnection";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import LoadingBar from "@/app/components/LoadingBar/LoadingBar";
+import { UserPersonalDataForm } from "@/app/components/UserPersonalDataForm/UserPersonalDataForm";
 
 export default function UserProfilePage(){
 
@@ -20,8 +21,13 @@ async function UserProfile(){
 
     return(
         <>
-        <h3 className="my-0">Welcome {userInfo.username}</h3>
-        <h3 className="my-0">Email: {userInfo.email}</h3>
+            <article className="flex flex-col w-full">
+                <h2 className="my-0 underline">Welcome back {userInfo.username}</h2>
+                <h3 className="my-0">Email: {userInfo.email}</h3>
+            </article>
+            <article className="flex flex-col w-full pt-2.5">
+                <UserPersonalDataForm />
+            </article>
         </>
     )
 }
