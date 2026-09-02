@@ -1,13 +1,31 @@
 import Image from "next/image"
+import Link from "next/link"
 
-
-export default function DashboardLayout({children}: {children: React.ReactNode}){
+export default function AccountLayout({children}: {children: React.ReactNode}){
     return(
         <>
             <header className="flex items-center justify-center">
                 <Image src="/assets/Logo/logo.svg" width={200} height={100} alt="Brand logo" />
             </header>
-            <main>
+            <main className="flex w-full">
+                <section className="w-[25%] border-r flex flex-col">
+                    <div className="w-full border-b flex flex-col items-start justify-start pl-1.5">
+                        <h1 className="my-0">Account</h1>
+                    </div>
+                    <div className="w-full border-b flex flex-col items-start justify-start pl-1.5">
+                        <Link href="/account"><h3 className="nav-link">Profile</h3></Link>
+                        <Link href="/account/order"><h3 className="nav-link">My Order</h3></Link>
+                        <Link href="/account/payment"><h3 className="nav-link">Payment</h3></Link>
+                        <Link href="/account/address"><h3 className="nav-link">Address</h3></Link>
+                        <Link href="/shopping-cart"><h3 className="nav-link">My Cart</h3></Link>
+                        <Link href="/wish-list"><h3 className="nav-link">Wishlist</h3></Link>
+                        <Link href="/account/setting"><h3 className="nav-link">Setting</h3></Link>
+                    </div>
+                    <div className="w-full flex flex-col items-start justify-start pl-1.5">
+                        <Link href=""><h3 className="nav-link">Customer Support</h3></Link>
+                        <a href=""><h3 className="nav-link">Log out</h3></a>
+                    </div>
+                </section>
                 {children}
             </main>
             <footer className="Footer mt-0">

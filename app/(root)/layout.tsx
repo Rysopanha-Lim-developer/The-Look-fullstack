@@ -1,5 +1,5 @@
 import Image from "next/image"
-
+import Link from "next/link"
 
 export default function RootLayout({children}: {children: React.ReactNode}){
     return(
@@ -8,48 +8,48 @@ export default function RootLayout({children}: {children: React.ReactNode}){
                 <nav className="nav-bar">
                     <ul className="nav-bar-ul w-[20%]">
                         <li>
-                            <a href="/">
+                            <Link href="/">
                                 <Image src="/assets/Logo/logo.svg" width={200} height={100} alt="Brand logo" />
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                     <ul className="nav-bar-ul w-[60%]">
                         <li>
-                            <a  href="/women" className="nav-link">
+                            <Link  href="/women" className="nav-link text-[1.5rem]">
                                 Women
-                            </a>
+                            </Link>
                         </li>
                         <li>
-                            <a  href="/men" className="nav-link">
+                            <Link  href="/men" className="nav-link text-[1.5rem]">
                                 Men
-                            </a>
+                            </Link>
                         </li>
                         <li>
-                            <a  href="/girls" className="nav-link">
+                            <Link  href="/girls" className="nav-link text-[1.5rem]">
                                 Girls
-                            </a>
+                            </Link>
                         </li>
                         <li>
-                            <a  href="/boys" className="nav-link">
+                            <Link  href="/boys" className="nav-link text-[1.5rem]">
                                 Boys
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                     <ul className="nav-bar-ul w-[20%]">
                         <li>
-                            <a href="/wish-list">
+                            <Link href="/wish-list">
                                 <Image src="/assets/Logo/wishListV2.svg" alt="Wish list" width={24} height={24}/>
-                            </a>
+                            </Link>
                         </li>
                         <li>
-                            <a href="/shopping-cart">
+                            <Link href="/shopping-cart">
                                 <Image src="/assets/Logo/ShoppingBag.svg" alt="Shopping cart" width={24} height={24}/>
-                            </a>
+                            </Link>
                         </li>
                         <li>
-                            <a href="/account">
+                            <Link href="/account">
                                 <Image src="/assets/Logo/accountlogo.svg" alt="Account" width={24} height={24}/>
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                 </nav>
