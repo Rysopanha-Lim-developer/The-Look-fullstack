@@ -52,6 +52,5 @@ ProductSchema.index({ brand: 1, price: -1 });   /*fast filter by brand, sorted b
                                                 or .find({theFieldAvailable in the index: ""})
                                                 it will perform instance look => faster query*/ 
 
-const productDB = mongoose.connection.useDb("Clothing-Datas", {useCache: true});
 
-export const ProductModel = productDB.models.ProductModel || productDB.model<Product>("ProductModel", ProductSchema, "all_clothing")
+export const ProductModel = models.ProductModel || model<Product>("ProductModel", ProductSchema, "all_clothing")

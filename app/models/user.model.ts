@@ -49,6 +49,5 @@ UserSchema.pre("save", async function(next){
 
 UserSchema.index({username: 1, email: 1});
 
-const userDB = mongoose.connection.useDb("Users", {useCache:true});
 
-export const UserModel = userDB.models.UserModel || userDB.model("UserModel", UserSchema, "users")
+export const UserModel = models.UserModel || model("UserModel", UserSchema, "users")
