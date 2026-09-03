@@ -41,5 +41,6 @@ yarn-error.log*
 next-env.d.ts
 
 
-#txt file
-projectStructure.txt
+#project structure
+folder-structure.md
+nextjs-frontend-backend-split.md

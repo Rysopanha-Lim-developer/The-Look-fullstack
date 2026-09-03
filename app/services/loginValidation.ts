@@ -1,7 +1,10 @@
+"use server"
+
 import { dbConnection } from "../lib/dbConnection";
 import { User, UserModel } from "@/app/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
+import { cookies } from "next/headers";
 
 export async function loginValidation(request:NextRequest) {
     const {username, email, password} = await request.json();
@@ -14,24 +17,25 @@ export async function loginValidation(request:NextRequest) {
 
         //This compare the incoming password and the one in the db
         const isUser = await bcrypt.compare(password, userReference.password)
-        if(username != userReference.username){
-            return NextResponse.json({
-                message : "Username not found",
-                staus : 422
-            })
-        }else{
-            if(!isUser){
-                return NextResponse.json(
-                    {
-                        message : "Incorrect password",
-                        status: 422
-                    }
-                )
-            }
-            else{
-                return NextResponse.json({message : "Successfully login", status: 200})
-            }
+        if (username !== userReference.username) {
+            return NextResponse.json({ message: "Username not found", status: 422 });
         }
+
+        if (!isUser) {
+            return NextResponse.json({ message: "Incorrect password", status: 422 });
+        }
+
+        const cookieStore = await cookies();
+
+        cookieStore.set('session', JSON.stringify({ username: username, email: email }), {
+            httpOnly: true,      // JS on the client can't read it (XSS protection)
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 30, // 30 days max life
+        });
+
+        return NextResponse.json({ message: "Successfully login", status: 200 });
     } catch (error:any) {
         return NextResponse.json({
                 message : error.message || "something went wrong",

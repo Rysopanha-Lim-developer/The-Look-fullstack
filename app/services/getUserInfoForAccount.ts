@@ -1,3 +1,5 @@
+"use server"
+
 import { UserModel, User } from "../models/user.model";
 import { NextResponse } from "next/server";
 import { dbConnection } from "../lib/dbConnection";

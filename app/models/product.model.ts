@@ -1,5 +1,6 @@
-import { Schema, model, models, Document, ObjectId, Types } from "mongoose";
-import mongoose from "mongoose";
+"use server"
+
+import { Schema, model, models } from "mongoose";
 
 export type Product = {
     brand: string,

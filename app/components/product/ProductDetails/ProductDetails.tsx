@@ -3,7 +3,7 @@ import { DetailProps } from "@/app/(root)/[slug]/page";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Product } from "@/app/models/product.model";
-import ProductDetailSkeleton from "../ProductDetailLoading/ProductSkeleton";
+import ProductDetailSkeleton from "../../common/ProductDetailLoading/ProductSkeleton";
 
 
 export default function ProductDetail({props}: DetailProps) {

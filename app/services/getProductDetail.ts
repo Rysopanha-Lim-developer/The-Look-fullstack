@@ -1,3 +1,5 @@
+"use server"
+
 import { dbConnection } from "@/app/lib/dbConnection";
 import { ProductModel } from "@/app/models/product.model";
 import { Product } from "@/app/models/product.model";

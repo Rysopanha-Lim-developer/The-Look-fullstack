@@ -1,7 +1,7 @@
-import InfiniteLogoScroll from "../components/InfiniteLogoScroll/InfiniteLogoScroll";
+import InfiniteLogoScroll from "../components/maketing/InfiniteLogoScroll/InfiniteLogoScroll";
 import Image from "next/image";
-import DisplayCard, { DisplayCardProps } from "../components/DisplayCard/DisplayCard";
-import LoadingBar from "../components/LoadingBar/LoadingBar";
+import DisplayCard, { DisplayCardProps } from "../components/product/DisplayCard/DisplayCard";
+import LoadingBar from "../components/common/LoadingBar/LoadingBar";
 
 import { dbConnection } from "../lib/dbConnection";
 import { ProductModel } from "../models/product.model";
