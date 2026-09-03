@@ -1,5 +1,8 @@
 import Image from "next/image"
 import Link from "next/link"
+import { Heart, ShoppingCart, User, ShieldLock, ArrowRightLeft, BanknoteArrowDown, Mail, Phone, Send  } from "lucide-react"
+import { Facebook, Tiktok, Instagram, XFormerlyTwitter  } from "@thesvg/react";
+
 
 export default function RootLayout({children}: {children: React.ReactNode}){
     return(
@@ -38,17 +41,17 @@ export default function RootLayout({children}: {children: React.ReactNode}){
                     <ul className="nav-bar-ul w-[20%]">
                         <li>
                             <Link href="/wish-list">
-                                <Image src="/assets/Logo/wishListV2.svg" alt="Wish list" width={24} height={24}/>
+                                <Heart />
                             </Link>
                         </li>
                         <li>
                             <Link href="/shopping-cart">
-                                <Image src="/assets/Logo/ShoppingBag.svg" alt="Shopping cart" width={24} height={24}/>
+                                <ShoppingCart />
                             </Link>
                         </li>
                         <li>
                             <Link href="/account">
-                                <Image src="/assets/Logo/accountlogo.svg" alt="Account" width={24} height={24}/>
+                                <User />
                             </Link>
                         </li>
                     </ul>
@@ -60,22 +63,24 @@ export default function RootLayout({children}: {children: React.ReactNode}){
             <footer className="Footer">
                 <ul className="media">
                     <li>Follow Us</li>
-                    <li ><Image src="/assets/Logo/Facebook.svg"  alt="Facebook" width={24} height={24} /> The Look Cambodia</li>
-                    <li ><Image src="/assets/Logo/TikTok.svg" alt="TikTok" width={24} height={24} /> @theLookCambodia</li>
-                    <li ><Image src="/assets/Logo/Instagram.svg"  alt="Instagram" width={24} height={24} /> @theLookCambodia</li>
-                    <li ><Image src="/assets/Logo/X.svg" alt="X" width={24} height={24} /> @theLookCambodia</li>
+                    <li ><Facebook variant="mono" width={24} height={24} /> The Look Cambodia</li>
+                    <li ><Tiktok variant="mono" width={24} height={24} /> @theLookCambodia</li>
+                    <li ><Instagram variant="mono" width={24} height={24} /> @theLookCambodia</li>
+                    <li ><XFormerlyTwitter width={24} height={24} /> @theLookCambodia</li>
                 </ul>
                 <ul className="media">
                     <li>Customer services</li>
-                    <li ><Image src="/assets/Logo/PrivacyPolicy.svg"  alt="Privacy Policy" width={24} height={24} /> Privacy Policy</li>
-                    <li ><Image src="/assets/Logo/Swapping.svg"  alt="Swapping" width={24} height={24} /> Item Exchange</li>
-                    <li ><Image src="/assets/Logo/MoneyLogo.svg"  alt="Money Logo" width={24} height={24} /> Cash Refund</li>
+                    <li >
+                        <ShieldLock /> 
+                        Privacy Policy</li>
+                    <li ><ArrowRightLeft /> Item Exchange</li>
+                    <li ><BanknoteArrowDown /> Cash Refund</li>
                 </ul>
                 <ul className="media">
                     <li>Contact Us</li>
-                    <li ><Image src="/assets/Logo/Email.svg"  alt="Email" width={24} height={24} /> tLook@gmail.com</li>
-                    <li ><Image src="/assets/Logo/Telephone.svg" alt="Telephone" width={24} height={24} /> (+855) 23 888 999</li>
-                    <li ><Image src="/assets/Logo/Telegram.svg"  alt="Telegram" width={24} height={24} /> @theLookCambodia</li>
+                    <li ><Mail /> tLook@gmail.com</li>
+                    <li ><Phone /> (+855) 23 888 999</li>
+                    <li ><Send /> @theLookCambodia</li>
                 </ul>
         </footer>
         </>

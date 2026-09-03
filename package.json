@@ -9,12 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@thesvg/react": "^3.3.2",
     "babel-plugin-react-compiler": "^1.0.0",
     "bcrypt": "^6.0.0",
+    "lucide-react": "^1.39.0",
     "mongoose": "^9.9.4",
     "next": "16.3.2",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "thesvg": "^3.3.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
