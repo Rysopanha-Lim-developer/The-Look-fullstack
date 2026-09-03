@@ -16,7 +16,6 @@ export default function AccountLayout({children}: {children: React.ReactNode}){
                         <Link href="/account"><h3 className="nav-link">Profile</h3></Link>
                         <Link href="/account/order"><h3 className="nav-link">My Order</h3></Link>
                         <Link href="/account/payment"><h3 className="nav-link">Payment</h3></Link>
-                        <Link href="/account/address"><h3 className="nav-link">Address</h3></Link>
                         <Link href="/shopping-cart"><h3 className="nav-link">My Cart</h3></Link>
                         <Link href="/wish-list"><h3 className="nav-link">Wishlist</h3></Link>
                         <Link href="/account/setting"><h3 className="nav-link">Setting</h3></Link>
