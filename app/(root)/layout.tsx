@@ -40,7 +40,7 @@ export default function RootLayout({children}: {children: React.ReactNode}){
                     </ul>
                     <ul className="nav-bar-ul w-[20%]">
                         <li>
-                            <Link href="/wish-list">
+                            <Link href="/favorite">
                                 <Heart />
                             </Link>
                         </li>

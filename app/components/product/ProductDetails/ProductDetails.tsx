@@ -9,11 +9,19 @@ import ProductDetailSkeleton from "../../common/ProductDetailLoading/ProductSkel
 export default function ProductDetail({props}: DetailProps) {
     let [detail, setDetail] = useState<Product | null>(null);
     let [loading, setLoading] = useState(true);
-    let [items, setItems] = useState<Product[] | null>(null);
+    let [cartItems, setCartItems] = useState<Product[] | null>(null);
+    let [favoriteItems, setFavoriteItems] = useState<Product[] | null>(null);
 
     useEffect(()=> {
-        setItems(() => {
+        setCartItems(() => {
             const savedItems = localStorage.getItem("cart-items")
+            if (!savedItems || savedItems === "undefined" || savedItems === "null") {
+                return []
+            }
+            return JSON.parse(savedItems)
+        })
+        setFavoriteItems(() => {
+            const savedItems = localStorage.getItem("favorite-items")
             if (!savedItems || savedItems === "undefined" || savedItems === "null") {
                 return []
             }
@@ -22,16 +30,27 @@ export default function ProductDetail({props}: DetailProps) {
     },[])
 
     useEffect(() => {
-        if (items === null || items === undefined) return //This prevent items to reset to [] when the page loaded
-        localStorage.setItem("cart-items", JSON.stringify(items))
-    }, [items])
+        if (cartItems === null || cartItems === undefined) return //This prevent items to reset to [] when the page loaded
+        localStorage.setItem("cart-items", JSON.stringify(cartItems))
+    }, [cartItems]);
+
+    useEffect(() => {
+        if (favoriteItems === null || favoriteItems === undefined) return //This prevent items to reset to [] when the page loaded
+        localStorage.setItem("favorite-items", JSON.stringify(favoriteItems))
+    }, [favoriteItems]);
 
     function AddItemToCart(){
         if (!detail) {
             return; 
         }
-        setItems(items => ([...items?? [], detail]))
-    }
+        setCartItems(cartItems => ([...cartItems?? [], detail]))
+    };
+    function AddItemToFavorite(){
+        if (!detail) {
+            return; 
+        }
+        setFavoriteItems(favoriteItems => ([...favoriteItems?? [], detail]))
+    };
 
     useEffect(() => {
         async function getDetails() {
@@ -89,8 +108,8 @@ export default function ProductDetail({props}: DetailProps) {
                 <button className="btn" onClick={AddItemToCart}>
                     <p>Add to cart</p>
                 </button>
-                <button className="btn">
-                    <p>Add to wishlist</p>
+                <button className="btn" onClick={AddItemToFavorite}>
+                    <p>Add to favorite</p>
                 </button>
             </div>
         </section>
