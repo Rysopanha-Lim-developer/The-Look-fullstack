@@ -9,6 +9,29 @@ import ProductDetailSkeleton from "../../common/ProductDetailLoading/ProductSkel
 export default function ProductDetail({props}: DetailProps) {
     let [detail, setDetail] = useState<Product | null>(null);
     let [loading, setLoading] = useState(true);
+    let [items, setItems] = useState<Product[] | null>(null);
+
+    useEffect(()=> {
+        setItems(() => {
+            const savedItems = localStorage.getItem("cart-items")
+            if (!savedItems || savedItems === "undefined" || savedItems === "null") {
+                return []
+            }
+            return JSON.parse(savedItems)
+        })
+    },[])
+
+    useEffect(() => {
+        if (items === null || items === undefined) return //This prevent items to reset to [] when the page loaded
+        localStorage.setItem("cart-items", JSON.stringify(items))
+    }, [items])
+
+    function AddItemToCart(){
+        if (!detail) {
+            return; 
+        }
+        setItems(items => ([...items?? [], detail]))
+    }
 
     useEffect(() => {
         async function getDetails() {
@@ -17,7 +40,7 @@ export default function ProductDetail({props}: DetailProps) {
                                     method: "GET",  
                                 }
                             ) 
-                const detail:any = await res.json();
+                const detail:Product = await res.json();
                 setDetail(detail)
             } catch (error) {
                 throw new Error("Product can't be fetch");
@@ -63,7 +86,7 @@ export default function ProductDetail({props}: DetailProps) {
                 </div>
             </div>
             <div className=" flex w-full justify-center gap-5">
-                <button className="btn">
+                <button className="btn" onClick={AddItemToCart}>
                     <p>Add to cart</p>
                 </button>
                 <button className="btn">

@@ -1,6 +1,6 @@
 export default function LoadingBar(){
     return (
-    <div className="flex h-dvh w-dvw items-center justify-center bg-white">
+    <div className="flex h-dvh w-full items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
         {/* Custom animated loading bar */}
         <div className="relative h-0.75 w-48 overflow-hidden rounded-full bg-[#121212]/10">
