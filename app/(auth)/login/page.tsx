@@ -31,12 +31,12 @@ export default function LoginPage(){
     //async & await is usable anywhere except when you try to use it as client component directly
     async function handelLogin(e:React.SubmitEvent<HTMLFormElement>){
         e.preventDefault();
-        const res = await fetch("/api/login", {
+        const req = await fetch("/api/login", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({username, email, password})
         });
-        const apiFeedback = await res.json();
+        const apiFeedback = await req.json();
         setApiFeedback(apiFeedback)
         if(apiFeedback.status === 200){
             route.push("/");
