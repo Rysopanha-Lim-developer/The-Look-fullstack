@@ -5,6 +5,7 @@ import { Product } from "@/app/models/product.model";
 import { useEffect, useState } from "react";
 
 export default function CartPage(){
+    // this state and useEffect is for rendering
     let [cartData, setCartData] = useState<Product[]>([]);
 
     useEffect(() => {
@@ -19,21 +20,13 @@ export default function CartPage(){
         localStorage.setItem("cart-items", JSON.stringify(filteredData))
     }, [])
 
-    async function sendOrder(){
-        const req = await fetch("/api/order", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({cartData})
-        })
-        const res = await req.json()
-        console.table(res)
-    }
-
     return(
         <>
             <div className="flex w-full items-center justify-between px-5">
                 <h1>My Cart</h1>
-                <button className="btn" onClick={sendOrder}>Checkout Here</button>
+                <a href="/shopping-cart/checkout">
+                    <button className="btn">Checkout Here</button>
+                </a>
             </div>
             <div className="w-full grid grid-cols-4 gap-4 px-2.5">
                 {cartData.map((eachData:Product) => {

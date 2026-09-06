@@ -1,5 +1,3 @@
-"use server"
-
 import { Schema, model, models } from "mongoose";
 
 export type Product = {

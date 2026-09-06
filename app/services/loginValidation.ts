@@ -1,5 +1,3 @@
-"use server"
-
 import { dbConnection } from "../lib/dbConnection";
 import { User, UserModel } from "@/app/models/user.model";
 import { NextRequest, NextResponse } from "next/server";

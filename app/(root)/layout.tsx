@@ -7,7 +7,7 @@ import { Facebook, Tiktok, Instagram, XFormerlyTwitter  } from "@thesvg/react";
 export default function RootLayout({children}: {children: React.ReactNode}){
     return(
         <>
-            <header className="flex w-full">
+            <header className="flex w-full print:hidden">
                 <nav className="nav-bar">
                     <ul className="nav-bar-ul w-[20%]">
                         <li>
@@ -60,7 +60,7 @@ export default function RootLayout({children}: {children: React.ReactNode}){
             <main>
                 {children}
             </main>
-            <footer className="Footer">
+            <footer className="Footer print:hidden">
                 <ul className="media">
                     <li>Follow Us</li>
                     <li ><Facebook variant="mono" width={24} height={24} /> The Look Cambodia</li>

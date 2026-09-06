@@ -10,5 +10,6 @@ export type userPersonalInfo = {
     district:string,
     communce:string,
     street:string,
-    telephone:string
+    telephone:string,
+    email:string
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { userPersonalInfo } from "@/app/lib/Types/generalTypes.module";
 
 
@@ -13,6 +13,7 @@ export function UserPersonalDataForm(){
     let [communce, setCommune] = useState("");
     let [street, setStreet] = useState("");
     let [telephone, setTelephone] = useState("");
+    let [email, setEmail] = useState("");
 
     function handleFirstname(e:any){
         setFirstname(e.target.value);
@@ -38,6 +39,9 @@ export function UserPersonalDataForm(){
     function handleTelephone(e:any){
         setTelephone(e.target.value);
     }
+    function handleEmail(e:any){
+        setEmail(e.target.value);
+    }
 
     function StoreUserPersonalData(e:React.SubmitEvent<HTMLFormElement>){
         e.preventDefault();
@@ -49,7 +53,8 @@ export function UserPersonalDataForm(){
             district,
             communce,
             street,
-            telephone
+            telephone,
+            email
         }
         
         localStorage.setItem("personal-data", JSON.stringify(personalData))
@@ -105,9 +110,15 @@ export function UserPersonalDataForm(){
                     <input type="text" name="street" className="w-[90%] rounded-lg" value={street}  onChange={handleStreet}/>
                 </div>
             </div>
-            <div className="flex flex-col w-[50%] items-start justify-start">
-                <label htmlFor="telephone">Tel</label>
-                <input type="tel" name="telephone" className="w-[90%] rounded-lg" value={telephone} onChange={handleTelephone} />
+            <div className="flex w-full items-center justify-evenly">
+                <div className="flex flex-col w-[50%]">
+                    <label htmlFor="telephone">Tel</label>
+                    <input type="tel" name="telephone" className="w-[90%] rounded-lg" value={telephone} onChange={handleTelephone} />
+                </div>
+                <div className="flex flex-col w-[50%]">
+                    <label htmlFor="email">Email</label>
+                    <input type="email" name="email" className="w-[90%] rounded-lg" value={email} onChange={handleEmail} />
+                </div>
             </div>
             <button className="btn w-[20%]" type="submit">
                 Save

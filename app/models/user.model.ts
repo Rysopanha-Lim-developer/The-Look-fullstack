@@ -1,9 +1,8 @@
-"use server"
-
 import {Schema, model, models} from "mongoose";
 import bcrypt from "bcrypt";//This is for hashing password
 
 export type User = {
+    _id?: string
     username: string,
     email: string,
     password: string,
