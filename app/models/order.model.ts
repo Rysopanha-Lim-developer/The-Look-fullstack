@@ -1,5 +1,5 @@
 import { Schema, Types, model, models } from "mongoose";
-import type { userPersonalInfo } from "../lib/Types/generalTypes.module";
+import type { UserPersonalInfo } from "../lib/Types/generalTypes.module";
 
 export type OrderItem = {
     productId: Types.ObjectId;
@@ -9,7 +9,7 @@ export type OrderItem = {
 
 export type Order = {
     accountId: Types.ObjectId;
-    userPersonalInfo: userPersonalInfo;
+    userPersonalInfo: UserPersonalInfo;
     items: OrderItem[];
 };
 

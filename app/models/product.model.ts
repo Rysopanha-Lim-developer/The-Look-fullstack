@@ -7,7 +7,8 @@ export type Product = {
     material: string,
     price: number,
     image: string,
-    slug: string
+    slug: string,
+    quantity?: number
 };
 
 const ProductSchema = new Schema<Product>(

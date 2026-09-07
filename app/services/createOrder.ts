@@ -1,5 +1,5 @@
 import { dbConnection } from "../lib/dbConnection";
-import { Order, OrderItem, OrderModel } from "../models/order.model";
+import { OrderItem, OrderModel } from "../models/order.model";
 import { UserModel, User } from "../models/user.model";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";

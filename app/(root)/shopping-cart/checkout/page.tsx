@@ -2,12 +2,13 @@
 
 import { Product } from "@/app/models/product.model";
 import { useState, useEffect } from "react";
-import { userPersonalInfo } from "@/app/lib/Types/generalTypes.module";
+import { UserPersonalInfo } from "@/app/lib/Types/generalTypes.module";
+import OrderReceipt from "@/app/components/product/Receipt/OrderReceipt";
 
 export default function Checkout(){
     // this state and useEffect is for getting data from local storage and sent to the api
     let [cartData, setCartData] = useState<Product[]>([]);
-    let [userPersonalInfo, setUserPersonalInfo] = useState<userPersonalInfo | null>(null)
+    let [userPersonalInfo, setUserPersonalInfo] = useState<UserPersonalInfo | null>(null)
     let [cookiesData, setCookiesData] = useState<{username: string, email:string} | null> (null)
 
 
@@ -24,7 +25,7 @@ export default function Checkout(){
     }, [])
 
     useEffect(() => {
-        const userPersonalInfo:userPersonalInfo = JSON.parse(localStorage.getItem("personal-data")?? "{}")
+        const userPersonalInfo:UserPersonalInfo = JSON.parse(localStorage.getItem("personal-data")?? "{}")
         setUserPersonalInfo(userPersonalInfo)
     },[])
 
@@ -52,22 +53,14 @@ export default function Checkout(){
     }
     return(
         <>
-        <h1 className="print:hidden" onClick={sendOrder}>checkout</h1>
-        <h2 className="w-full text-center">Recipe</h2>
-        <div>
-            <p>{cookiesData?.username}</p>
-            <p>{cookiesData?.email}</p>
-            <p>{userPersonalInfo?.firstname}</p>
-            <p>{userPersonalInfo?.lastname}</p>
-            <p>{userPersonalInfo?.gender}</p>
-            <p>{userPersonalInfo?.cityNprovince}</p>
-            <p>{userPersonalInfo?.district}</p>
-            <p>{userPersonalInfo?.communce}</p>
-            <p>{userPersonalInfo?.telephone}</p>
-            {cartData.map((e) => {
-                return <p>{e.name}</p>
-            })}
-        </div>
+        {userPersonalInfo && cookiesData && (
+        <OrderReceipt
+            cartData={cartData}
+            cookiesData={cookiesData}
+            userPersonalInfo={userPersonalInfo}
+        />
+        )}
+        <button className="btn" onClick={sendOrder}>Put order</button>
         </>
     )
 }
