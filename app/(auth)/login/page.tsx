@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation";
 
-import { ApiFeedback } from "@/app/lib/Types/generalTypes.module";
+import { ApiFeedback } from "@/Backend/lib/Types/generalTypes.module";
 
 
 export default function LoginPage(){

@@ -1,10 +1,10 @@
-import InfiniteLogoScroll from "../components/maketing/InfiniteLogoScroll/InfiniteLogoScroll";
+import InfiniteLogoScroll from "@/Frontend/components/maketing/InfiniteLogoScroll/InfiniteLogoScroll";
 import Image from "next/image";
-import DisplayCard, { DisplayCardProps } from "../components/product/DisplayCard/DisplayCard";
-import LoadingBar from "../components/common/LoadingBar/LoadingBar";
+import DisplayCard, { DisplayCardProps } from "@/Frontend/components/product/DisplayCard/DisplayCard";
+import LoadingBar from "@/Frontend/components/common/LoadingBar/LoadingBar";
 
-import { dbConnection } from "../lib/dbConnection";
-import { ProductModel } from "../models/product.model";
+import { dbConnection } from "@/Backend/lib/dbConnection";
+import { ProductModel } from "@/Backend/models/product.model";
 import { connection } from "next/server";
 /*
 `connection()` is Next.js 16's primitive (under the new `cacheComponents` model)

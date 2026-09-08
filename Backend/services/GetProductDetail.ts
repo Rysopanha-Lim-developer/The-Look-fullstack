@@ -1,9 +1,8 @@
-import { dbConnection } from "@/app/lib/dbConnection";
-import { ProductModel } from "@/app/models/product.model";
-import { Product } from "@/app/models/product.model";
+import { dbConnection } from "../lib/dbConnection";
+import { Product, ProductModel } from "../models/product.model";
 import { NextResponse } from "next/server";
 
-export async function getProductDetail(slug: {slug: Pick<Product, "slug">}){
+export async function GetProductDetail(slug: {slug: Pick<Product, "slug">}){
     try {
         await dbConnection();
         //findOne method required object that why we use {slug} and not slug

@@ -1,10 +1,10 @@
-import { dbConnection } from "../lib/dbConnection";
-import { User, UserModel } from "@/app/models/user.model";
+import { dbConnection } from "@/Backend/lib/dbConnection";
+import { User, UserModel } from "@/Backend/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { cookies } from "next/headers";
 
-export async function loginValidation(request:NextRequest) {
+export async function LoginValidation(request:NextRequest) {
     const {username, email, password} = await request.json();
     try {
         await dbConnection();

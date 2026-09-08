@@ -1,6 +1,4 @@
-
-
-import "server-only" //Run npm install server-only, this help check for server code leak to client side
+// import "server-only" //Run npm install server-only, this help check for server code leak to client side
 
 import mongoose from "mongoose";
 

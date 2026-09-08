@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import type { userPersonalInfo } from "@/app/lib/Types/generalTypes.module";
+import { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
 
 
 export function UserPersonalDataForm(){
@@ -10,7 +10,7 @@ export function UserPersonalDataForm(){
     let [gender, setGender] = useState("");
     let [cityNprovince, setCityNprovince] = useState("");
     let [district, setDistrict] = useState("");
-    let [communce, setCommune] = useState("");
+    let [commune, setCommune] = useState("");
     let [street, setStreet] = useState("");
     let [telephone, setTelephone] = useState("");
     let [email, setEmail] = useState("");
@@ -45,13 +45,13 @@ export function UserPersonalDataForm(){
 
     function StoreUserPersonalData(e:React.SubmitEvent<HTMLFormElement>){
         e.preventDefault();
-        const personalData:userPersonalInfo = {
+        const personalData:UserPersonalInfo = {
             firstname,
             lastname,
             gender,
             cityNprovince, 
             district,
-            communce,
+            commune,
             street,
             telephone,
             email
@@ -102,8 +102,8 @@ export function UserPersonalDataForm(){
             <div className="flex w-full items-center justify-evenly">
                 
                 <div className="flex flex-col w-[50%]">
-                    <label htmlFor="communce">Communce</label>
-                    <input type="text" name="communce" className="w-[90%] rounded-lg" value={communce} onChange={handleCommune} />
+                    <label htmlFor="commune">Communce</label>
+                    <input type="text" name="commune" className="w-[90%] rounded-lg" value={commune} onChange={handleCommune} />
                 </div>
                 <div className="flex flex-col w-[50%]">
                     <label htmlFor="street">Street</label>

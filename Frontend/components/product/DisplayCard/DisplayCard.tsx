@@ -1,4 +1,4 @@
-import { Product } from "@/app/models/product.model"
+import { Product } from "@/Backend/models/product.model";
 import Image from "next/image";
 
 export type DisplayCardProps = {

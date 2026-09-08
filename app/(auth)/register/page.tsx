@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ApiFeedback } from "@/app/lib/Types/generalTypes.module";
+import { ApiFeedback } from "@/Backend/lib/Types/generalTypes.module";
 import { useRouter } from "next/navigation";
 
 

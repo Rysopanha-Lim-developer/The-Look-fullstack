@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
-import LoadingBar from "@/app/components/common/LoadingBar/LoadingBar";
-import { UserPersonalDataForm } from "@/app/components/user/UserPersonalDataForm/UserPersonalDataForm";
+import LoadingBar from "@/Frontend/components/common/LoadingBar/LoadingBar";
+import { UserPersonalDataForm } from "@/Frontend/components/user/UserPersonalDataForm/UserPersonalDataForm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation"; //work the same as useRouter but for server component
 

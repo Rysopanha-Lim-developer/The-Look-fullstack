@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * Skeleton loading state for a product detail page
  * (image + labeled spec list + action buttons).

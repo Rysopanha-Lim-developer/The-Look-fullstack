@@ -1,7 +1,7 @@
 "use client"
 
-import DisplayCard from "@/app/components/product/DisplayCard/DisplayCard";
-import { Product } from "@/app/models/product.model";
+import DisplayCard from "@/Frontend/components/product/DisplayCard/DisplayCard";
+import { Product } from "@/Backend/models/product.model";
 import { useEffect, useState } from "react";
 
 export default function CartPage(){

@@ -1,8 +1,8 @@
-import { Product } from "@/app/models/product.model";
+import { Product } from "@/Backend/models/product.model";
 import { Suspense } from "react";
 import { connection } from "next/server";
-import ProductDetail from "@/app/components/product/ProductDetails/ProductDetails";
-import ProductDetailSkeleton from "@/app/components/common/ProductDetailLoading/ProductSkeleton";
+import ProductDetail from "@/Frontend/components/product/ProductDetails/ProductDetails";
+import ProductDetailSkeleton from "@/Frontend/components/common/ProductDetailLoading/ProductSkeleton";
 
 export type PageParams = {
     params: Promise<Pick<Product, "slug">>

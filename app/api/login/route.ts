@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
-import { loginValidation } from "@/app/services/loginValidation";
+import { LoginValidation } from "@/Backend/services/LoginValidation";
 
 export async function POST(request:NextRequest, params:any) {
-    return loginValidation(request);
+    return LoginValidation(request);
 }

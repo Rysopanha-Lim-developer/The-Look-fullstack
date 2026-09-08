@@ -2,9 +2,8 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
-import { OrderItem, Order } from '@/app/models/order.model';
-import { UserPersonalInfo } from '@/app/lib/Types/generalTypes.module';
-import { Product } from '@/app/models/product.model';
+import { UserPersonalInfo } from '@/Backend/lib/Types/generalTypes.module';
+import { Product } from '@/Backend/models/product.model';
 
 /* ---------------------------------- Types --------------------------------- */
 

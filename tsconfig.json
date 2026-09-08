@@ -18,8 +18,14 @@
         "name": "next"
       }
     ],
+    //copy this config setting
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/app/*": ["/app/*"],
+      "@/components/*": ["/components/*"],
+      "@/features/*": ["/features/*"],
+      "@/lib/*": ["/lib/*"],
+      "@/hooks/*": ["/hooks/*"]
     }
   },
   "include": [

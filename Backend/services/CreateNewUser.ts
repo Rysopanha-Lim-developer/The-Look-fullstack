@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { User, UserModel } from "../models/user.model";
+import { UserModel } from "../models/user.model";
 import { dbConnection } from "../lib/dbConnection";
 
-export async function createNewUser(request:NextRequest) {
+export async function CreateNewUser(request:NextRequest) {
     try{
         const {username, email, password} = await request.json();
 

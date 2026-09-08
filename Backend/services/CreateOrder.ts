@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 
-export async function createOrder(request:NextRequest) {
+export async function CreateOrder(request:NextRequest) {
     try {
         await dbConnection();
         const {cartData, userPersonalInfo} = await request.json();

@@ -1,4 +1,4 @@
-import LoadingBar from "./components/common/LoadingBar/LoadingBar"
+import LoadingBar from "../Frontend/components/common/LoadingBar/LoadingBar"
 export default function LoadingPage(){
     return (<LoadingBar />)
 }

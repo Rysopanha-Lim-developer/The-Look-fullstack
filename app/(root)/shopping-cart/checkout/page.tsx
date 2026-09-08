@@ -1,15 +1,17 @@
 "use client"
 
-import { Product } from "@/app/models/product.model";
+import { Product } from "@/Backend/models/product.model";
 import { useState, useEffect } from "react";
-import { UserPersonalInfo } from "@/app/lib/Types/generalTypes.module";
-import OrderReceipt from "@/app/components/product/Receipt/OrderReceipt";
+import { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
+import OrderReceipt from "@/Frontend/components/product/Receipt/OrderReceipt";
+import OrderReceiptSkeleton from "@/Frontend/components/common/RecieptSkeleton/OrderReceiptSkeleton";
 
 export default function Checkout(){
     // this state and useEffect is for getting data from local storage and sent to the api
     let [cartData, setCartData] = useState<Product[]>([]);
     let [userPersonalInfo, setUserPersonalInfo] = useState<UserPersonalInfo | null>(null)
     let [cookiesData, setCookiesData] = useState<{username: string, email:string} | null> (null)
+    let [loading, setLoading] = useState(true);
 
 
     useEffect(() => {
@@ -29,8 +31,25 @@ export default function Checkout(){
         setUserPersonalInfo(userPersonalInfo)
     },[])
 
-    async function sendOrder(){
-        //The body need more in 1.username&email
+    useEffect(() => {
+        async function GetReciept(){
+            try {
+                const req = await fetch("/api/order", {
+                    method: "GET",
+                });
+                const res = await req.json();
+                setCookiesData(res)
+            } catch (error) {
+                console.error(error)
+            }
+            finally{
+                setLoading(false)
+            }
+        };
+        GetReciept();
+    }, []);
+
+    async function SendOrder(){
         try {
             const req = await fetch("/api/order", {
                 method: "POST",
@@ -45,11 +64,12 @@ export default function Checkout(){
             setCookiesData(res.cookiesData)
             setCartData(res.cartData)
             setUserPersonalInfo(res.userPersonalInfo)
-
-            console.table(res.items)
         } catch (error) {
             console.error(error)
         }
+    }
+    if(loading){
+        return <OrderReceiptSkeleton />
     }
     return(
         <>
@@ -60,7 +80,9 @@ export default function Checkout(){
             userPersonalInfo={userPersonalInfo}
         />
         )}
-        <button className="btn" onClick={sendOrder}>Put order</button>
+        <div className="w-[71%] flex items-center justify-end">
+            <button type="button" className="btn" onClick={SendOrder}>Place Order</button>
+        </div>
         </>
     )
 }
