@@ -1,6 +1,6 @@
-import { dbConnection } from "../lib/dbConnection";
-import { OrderItem, OrderModel } from "../models/order.model";
-import { UserModel, User } from "../models/user.model";
+import { dbConnection } from "@/Backend/lib/dbConnection";
+import { OrderItem, OrderModel } from "@/Backend/models/order.model";
+import { UserModel, User } from "@/Backend/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 

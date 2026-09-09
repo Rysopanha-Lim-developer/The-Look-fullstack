@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserModel } from "../models/user.model";
-import { dbConnection } from "../lib/dbConnection";
+import { UserModel } from "@/Backend/models/user.model";
+import { dbConnection } from "@/Backend/lib/dbConnection";
 
 export async function CreateNewUser(request:NextRequest) {
     try{

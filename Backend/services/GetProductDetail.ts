@@ -1,5 +1,5 @@
-import { dbConnection } from "../lib/dbConnection";
-import { Product, ProductModel } from "../models/product.model";
+import { dbConnection } from "@/Backend/lib/dbConnection";
+import { Product, ProductModel } from "@/Backend/models/product.model";
 import { NextResponse } from "next/server";
 
 export async function GetProductDetail(slug: {slug: Pick<Product, "slug">}){

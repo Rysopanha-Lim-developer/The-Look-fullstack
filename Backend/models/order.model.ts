@@ -1,5 +1,5 @@
 import { Schema, Types, model, models } from "mongoose";
-import type { UserPersonalInfo } from "../lib/Types/generalTypes.module";
+import type { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
 
 export type OrderItem = {
     productId: Types.ObjectId;
@@ -8,9 +8,11 @@ export type OrderItem = {
 };
 
 export type Order = {
+    _id: Types.ObjectId;
     accountId: Types.ObjectId;
     userPersonalInfo: UserPersonalInfo;
     items: OrderItem[];
+    createdAt:Date
 };
 
 const OrderSchema = new Schema<Order>(
@@ -29,6 +31,7 @@ const OrderSchema = new Schema<Order>(
         timestamps: true 
     }
 );
+OrderSchema.index({ accountId: 1, createdAt: -1 });
 
 
 export const OrderModel = models.OrderModel || model("OrderModel", OrderSchema, "orders")

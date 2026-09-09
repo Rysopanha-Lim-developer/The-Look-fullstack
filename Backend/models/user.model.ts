@@ -48,7 +48,7 @@ UserSchema.pre("save", async function(next){
     }
 })
 
-UserSchema.index({username: 1, email: 1});
+UserSchema.index({username: 1, email: 1, createdAt: -1});
 
 
 export const UserModel = models.UserModel || model("UserModel", UserSchema, "users")
