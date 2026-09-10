@@ -1,14 +1,13 @@
 "use client"
-import type { DetailProps } from "@/app/(root)/[slug]/page";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Product } from "@/Backend/models/product.model";
 import ProductDetailSkeleton from "@/Frontend/components/common/ProductDetailLoading/ProductSkeleton";
 
 
-export default function ProductDetail({props}: DetailProps) {
-    let [detail, setDetail] = useState<Product | null>(null);
-    let [loading, setLoading] = useState(true);
+export default function ProductDetail({props}: {props: Product}) {
+    let detail = props
+    let [loading, setLoading] = useState(false);
     let [cartItems, setCartItems] = useState<Product[] | null>(null);
     let [favoriteItems, setFavoriteItems] = useState<Product[] | null>(null);
 
@@ -52,28 +51,8 @@ export default function ProductDetail({props}: DetailProps) {
         setFavoriteItems(favoriteItems => ([...favoriteItems?? [], detail]))
     };
 
-    useEffect(() => {
-        async function getDetails() {
-            try {
-                const res = await fetch  ( `/api/${props.slug}`,{
-                                    method: "GET",  
-                                }
-                            ) 
-                const detail:Product = await res.json();
-                setDetail(detail)
-            } catch (error) {
-                throw new Error("Product can't be fetch");
-            } 
-            finally{
-                setLoading(false)
-            }
-        }
-
-        getDetails()
-    },[props])
-
     if (loading) return <ProductDetailSkeleton />;
-    if (!detail) return <h1>Product can't be fetch</h1>;
+    detail ? loading = false : <h1>Product can't be fetch</h1>;
 
     return(
         <section className="flex flex-col w-full h-[90dvh] items-center justify-evenly">

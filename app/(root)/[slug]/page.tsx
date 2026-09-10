@@ -1,8 +1,9 @@
-import { Product } from "@/Backend/models/product.model";
+import { Product, ProductModel } from "@/Backend/models/product.model";
 import { Suspense } from "react";
-import { connection } from "next/server";
+import { dbConnection } from "@/Backend/lib/dbConnection";
 import ProductDetail from "@/Frontend/components/product/ProductDetails/ProductDetails";
 import ProductDetailSkeleton from "@/Frontend/components/common/ProductDetailLoading/ProductSkeleton";
+import { GetProductDetail, GetPrice } from "@/Backend/services/GetProductDetail";
 
 export type PageParams = {
     params: Promise<Pick<Product, "slug">>
@@ -21,9 +22,13 @@ export default function DetailPage({params}: PageParams){
 }
 
 async function Details({params}:PageParams) {
-    await connection();
-    const productSlug = await params;
+    "use cache"
+    await dbConnection();
+    const {slug} = await params;
+    let productDetail:Product = await ProductModel.findOne({slug: slug}).lean()
+    productDetail = JSON.parse(JSON.stringify(productDetail))
+
     return(
-        <ProductDetail props={productSlug}/>
+        <ProductDetail props={productDetail}/>
     )
 }

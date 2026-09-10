@@ -3,9 +3,8 @@ import Image from "next/image";
 import DisplayCard, { DisplayCardProps } from "@/Frontend/components/product/DisplayCard/DisplayCard";
 import LoadingBar from "@/Frontend/components/common/LoadingBar/LoadingBar";
 
-import { dbConnection } from "@/Backend/lib/dbConnection";
-import { ProductModel } from "@/Backend/models/product.model";
-import { connection } from "next/server";
+import { Product } from "@/Backend/models/product.model";
+import { GetProductDetail, GetPrice } from "@/Backend/services/GetProductDetail";
 /*
 `connection()` is Next.js 16's primitive (under the new `cacheComponents` model)
 that tells Next: "this part of the tree must be rendered dynamically,
@@ -38,23 +37,28 @@ export default function Home() {
 
 //Make db connection and query here instead
 async function Products() {
-    await connection()
-    /*
-    Opts this specific subtree (not the whole route) into dynamic rendering.
-    This is what actually satisfies Next's requirement — every dynamic
-    data access must happen inside a Suspense-wrapped component, not
-    directly in the top-level page component. 
-    */
+    //Get the detail and price of each product
+    const detail = await GetProductDetail();
+    const price:{_id: string, price: number}[] = await GetPrice(detail.map((p:{_id: string, price: number}) => p._id))
 
-    await dbConnection()
-    const products = await ProductModel.find({price: 100}).sort({ name: 1 }).lean()
+    //Create a key value map as reference
+    const liveData = new Map(price.map((e:{_id: string, price: number}): [string, { _id: string; price: number }] => [e._id, e]))
+
+    //Combine both array by matching there _id
+    const products:Product[] = detail.map((eachDetail:Product) => ({
+        ...eachDetail,
+        price: liveData.get(eachDetail._id)?.price ?? null,
+    }))
+
+    //filter to get specific data
+    const filteredData = products.filter(product =>{return product.slug.startsWith("men-accessories") || product.price == 100});
 
     return (
         <>
             <h1>New Product</h1>
             <section className="allProductsSubSection">
                 <div className="w-full h-auto flex gap-5 mt-o mb-0 ml-2.5 mr-2.5">
-                    {products.map((eachProduct) => {
+                    {filteredData.map((eachProduct:any) => {
                         return(
                             <DisplayCard key={eachProduct._id} data={eachProduct} />
                         )
