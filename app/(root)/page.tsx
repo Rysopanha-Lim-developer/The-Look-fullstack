@@ -1,10 +1,10 @@
 import InfiniteLogoScroll from "@/Frontend/components/maketing/InfiniteLogoScroll/InfiniteLogoScroll";
 import Image from "next/image";
-import DisplayCard, { DisplayCardProps } from "@/Frontend/components/product/DisplayCard/DisplayCard";
+import DisplayCard from "@/Frontend/components/product/DisplayCard/DisplayCard";
 import LoadingBar from "@/Frontend/components/common/LoadingBar/LoadingBar";
 
 import { Product } from "@/Backend/models/product.model";
-import { GetProductDetail, GetPrice } from "@/Backend/services/GetProductDetail";
+import { GetDisplayProduct } from "@/Backend/lib/GetDisplayProduct";
 /*
 `connection()` is Next.js 16's primitive (under the new `cacheComponents` model)
 that tells Next: "this part of the tree must be rendered dynamically,
@@ -36,22 +36,14 @@ export default function Home() {
 }
 
 //Make db connection and query here instead
-async function Products() {
-    //Get the detail and price of each product
-    const detail = await GetProductDetail();
-    const price:{_id: string, price: number}[] = await GetPrice(detail.map((p:{_id: string, price: number}) => p._id))
-
-    //Create a key value map as reference
-    const liveData = new Map(price.map((e:{_id: string, price: number}): [string, { _id: string; price: number }] => [e._id, e]))
-
-    //Combine both array by matching there _id
-    const products:Product[] = detail.map((eachDetail:Product) => ({
-        ...eachDetail,
-        price: liveData.get(eachDetail._id)?.price ?? null,
-    }))
+export async function Products() {
+    const products = await GetDisplayProduct()
 
     //filter to get specific data
-    const filteredData = products.filter(product =>{return product.slug.startsWith("men-accessories") || product.price == 100});
+    const filteredData = products.filter(product =>{
+        const displayProducts = product.slug.startsWith("men-accessories") || product.price == 100;
+        return displayProducts
+    });
 
     return (
         <>

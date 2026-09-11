@@ -48,6 +48,7 @@ const ProductSchema = new Schema<Product>(
 
 ProductSchema.index({ name: "text", brand: "text", slug: "text" }); // enables text search across name + brand
 ProductSchema.index({ name: 1 })
+ProductSchema.index({ brand: 1 })
 ProductSchema.index({ price: -1 })
 ProductSchema.index({ brand: 1, name: 1, price: -1,});   /*fast filter by brand, sorted by price
                                                 and when using the .find({brand:""}) or .find({price:""})

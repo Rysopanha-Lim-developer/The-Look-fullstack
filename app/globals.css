@@ -11,6 +11,10 @@
     --header-btn-active : rgba(36, 36, 36, 0.7);
 }
 
+html, body{
+  scroll-snap-align: top;
+  scroll-behavior: smooth;
+}
 body {
   background: var(--background);
   color: var(--foreground);
