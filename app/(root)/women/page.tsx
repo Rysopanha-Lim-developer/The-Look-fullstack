@@ -16,7 +16,7 @@ export default function WomenPage(){
     )
 }
 
-export async function WomenDisplaySection(){
+async function WomenDisplaySection(){
     const products = await GetDisplayProduct();
     const tshirts = products.filter(product => {
         const displayProduct = product.slug.startsWith("women-tshirts-")
@@ -48,7 +48,7 @@ export async function WomenDisplaySection(){
     })
     return(
         <>
-        <h1 id="tshirt">T-shirts</h1>
+        <h1 id="tshirts">T-shirts</h1>
         <section  className="allProductsSubSection">
             <div className="w-full h-auto flex gap-5 mt-o mb-0 ml-2.5 mr-2.5">
                 {tshirts.map((eachProduct:any) => {

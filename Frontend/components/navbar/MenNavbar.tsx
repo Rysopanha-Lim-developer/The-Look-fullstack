@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function WomenNavbar(){
+export default function MenNavbar(){
     return(
         <nav className="nav-bar sticky pb-2 top-16 z-10 bg-[background]">
             <ul className="nav-bar-ul w-full">
@@ -15,13 +15,8 @@ export default function WomenNavbar(){
                     </Link>
                 </li>
                 <li>
-                    <Link  href="#skirts" className="nav-link text-[1.2rem]">
-                        Skirts
-                    </Link>
-                </li>
-                <li>
-                    <Link  href="#dresses" className="nav-link text-[1.2rem]">
-                        Dresses
+                    <Link  href="#shorts" className="nav-link text-[1.2rem]">
+                        Shorts
                     </Link>
                 </li>
                 <li>

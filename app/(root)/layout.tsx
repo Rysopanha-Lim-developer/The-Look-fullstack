@@ -7,7 +7,7 @@ import { Facebook, Tiktok, Instagram, XFormerlyTwitter  } from "@thesvg/react";
 export default function RootLayout({children}: {children: React.ReactNode}){
     return(
         <>
-            <header className="flex w-full print:hidden">
+            <header className="flex w-full print:hidden sticky top-0 z-10 bg-[background]">
                 <nav className="nav-bar">
                     <ul className="nav-bar-ul w-[20%]">
                         <li>
