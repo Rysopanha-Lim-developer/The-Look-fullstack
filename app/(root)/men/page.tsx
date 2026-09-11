@@ -1,4 +1,4 @@
-import MenNavbar from "@/Frontend/components/navbar/MenNavbar"
+import MenNavbar from "@/Frontend/components/navbar/MenNavbar";
 import DisplayCard from "@/Frontend/components/product/DisplayCard/DisplayCard";
 import { GetDisplayProduct } from "@/Backend/lib/GetDisplayProduct";
 import LoadingBar from "@/Frontend/components/common/LoadingBar/LoadingBar";
