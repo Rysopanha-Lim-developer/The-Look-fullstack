@@ -12,6 +12,7 @@ export default function Checkout(){
     let [userPersonalInfo, setUserPersonalInfo] = useState<UserPersonalInfo | null>(null)
     let [cookiesData, setCookiesData] = useState<{username: string, email:string} | null> (null)
     let [loading, setLoading] = useState(true);
+    let [apiStatus, setApiStatus] = useState();
 
 
     useEffect(() => {
@@ -61,9 +62,11 @@ export default function Checkout(){
                 throw new Error("Cannot create order");
             };
 
+            setApiStatus(res.status)
             setCookiesData(res.cookiesData)
             setCartData(res.cartData)
             setUserPersonalInfo(res.userPersonalInfo)
+            localStorage.setItem("cart-items", JSON.stringify([]))
         } catch (error) {
             console.error(error)
         }
@@ -73,16 +76,21 @@ export default function Checkout(){
     }
     return(
         <>
-        {userPersonalInfo && cookiesData && (
-        <OrderReceipt
-            cartData={cartData}
-            cookiesData={cookiesData}
-            userPersonalInfo={userPersonalInfo}
-        />
-        )}
-        <div className="w-[71%] flex items-center justify-end">
-            <button type="button" className="btn" onClick={SendOrder}>Place Order</button>
-        </div>
+        <section className="w-full flex items-center justify-center">
+            <article className="w-max flex flex-col items-center justify-center">
+                {userPersonalInfo && cookiesData && (
+                <OrderReceipt
+                    cartData={cartData}
+                    cookiesData={cookiesData}
+                    userPersonalInfo={userPersonalInfo}
+                />
+                )}
+                <div className="w-full flex items-center justify-end">
+                    <button type="button" className="btn" onClick={SendOrder}>Place Order</button>
+                </div>
+            </article>
+        </section>
+        
         </>
     )
 }
