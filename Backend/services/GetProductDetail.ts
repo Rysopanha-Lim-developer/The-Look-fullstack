@@ -31,7 +31,6 @@ export async function GetProductDetail() {
 
 export async function GetPrice(_id: string[]) {
     // no 'use cache' — always fresh
-
     await connection();
     await dbConnection();
     const price:{_id: string, price: number}[] = await ProductModel.find({_id: _id})

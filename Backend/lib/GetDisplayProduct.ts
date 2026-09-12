@@ -4,7 +4,7 @@ import { Product } from "@/Backend/models/product.model";
 export async function GetDisplayProduct(){
     //Get the detail and price of each product
     const detail = await GetProductDetail();
-    const price:{_id: string, price: number}[] = await GetPrice(detail.map((p:{_id: string, price: number}) => p._id))
+    const price:{_id: string, price: number}[] = await GetPrice(detail.map((p:Product) => p._id))
 
     //Create a key value map as reference
     const liveData = new Map(price.map((e:{_id: string, price: number}): [string, { _id: string; price: number }] => [e._id, e]))

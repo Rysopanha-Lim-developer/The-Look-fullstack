@@ -2,13 +2,13 @@ import { Schema, Types, model, models } from "mongoose";
 import type { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
 
 export type OrderItem = {
-    productId: Types.ObjectId;
+    productId: string;
     priceAtPurchase: number;
     quantity?: number;
 };
 
 export type Order = {
-    _id: Types.ObjectId;
+    _id: string;
     accountId: Types.ObjectId;
     userPersonalInfo: UserPersonalInfo;
     items: OrderItem[];
