@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserModel } from "@/Backend/models/user.model";
+import { User, UserModel } from "@/Backend/models/user.model";
 import { dbConnection } from "@/Backend/lib/dbConnection";
 
 export async function CreateNewUser(request:NextRequest) {
@@ -18,8 +18,29 @@ export async function CreateNewUser(request:NextRequest) {
 
             ); 
         }
-        await dbConnection()
-        await UserModel.create({username, email, password})
+        await dbConnection();
+        const existedUser = await UserModel.findOne({
+            $or: [{ username: username }, { email: email }]
+        });
+        if (existedUser) {
+            if (existedUser.username === username) {
+                return NextResponse.json(
+                    {
+                        message: `Username already existed. Please choose another username.`,
+                        status: 403
+                    }
+            );
+            }
+            if (existedUser.email === email as string) {
+                return NextResponse.json(
+                    {
+                        message: `Email has been used. Please use another email.`,
+                        status: 403
+                    }
+                );
+            }
+        }
+        await UserModel.create({username, email, password});
 
         return NextResponse.json(
             { 
