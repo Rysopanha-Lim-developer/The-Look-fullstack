@@ -3,6 +3,7 @@ import { User, UserModel } from "@/Backend/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { cookies } from "next/headers";
+import z from "zod";
 
 export async function LoginValidation(request:NextRequest) {
     const {username, email, password} = await request.json();

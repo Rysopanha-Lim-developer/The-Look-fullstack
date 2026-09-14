@@ -3,7 +3,6 @@ import Image from "next/image";
 import DisplayCard from "@/Frontend/components/product/DisplayCard/DisplayCard";
 import LoadingBar from "@/Frontend/components/common/LoadingBar/LoadingBar";
 
-import { Product } from "@/Backend/models/product.model";
 import { GetDisplayProduct } from "@/Backend/lib/GetDisplayProduct";
 /*
 `connection()` is Next.js 16's primitive (under the new `cacheComponents` model)
