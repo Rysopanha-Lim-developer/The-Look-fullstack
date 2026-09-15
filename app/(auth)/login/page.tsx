@@ -14,6 +14,7 @@ export default function LoginPage(){
     let [password, setPassword] = useState("");
 
     let [apiFeedback, setApiFeedback] = useState<ApiFeedback | any>({});
+    let [apiStatus, setApiStatus] = useState(0);
 
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     const isEmailValid = emailRegex.test(email);
@@ -31,14 +32,15 @@ export default function LoginPage(){
     //async & await is usable anywhere except when you try to use it as client component directly
     async function handelLogin(e:React.SubmitEvent<HTMLFormElement>){
         e.preventDefault();
-        const req = await fetch("/api/login", {
+        const res = await fetch("/api/login", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({username, email, password})
         });
-        const apiFeedback = await req.json();
+        const apiFeedback = await res.json();
         setApiFeedback(apiFeedback)
-        if(apiFeedback.status === 200){
+        setApiStatus(res.status)
+        if(res.ok){
             route.push("/");
         }
     }
@@ -127,13 +129,14 @@ export default function LoginPage(){
                     </div>
                     <div>
                         <button type="submit" className="btn px-5">
-                            <a href= {apiFeedback.status === 200 ? "/": "/login"}>
-                            Login</a>
+                            Login
                         </button>
                     </div>
                 </form>
                 <div>
-                    <p>{apiFeedback.message}</p>
+                    {
+                        apiStatus != 0 ?  <p>{apiFeedback.message} {apiStatus}</p> : <p></p>
+                    }
                 </div>
             </article>
         </section>

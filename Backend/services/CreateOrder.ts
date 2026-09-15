@@ -48,7 +48,7 @@ export async function CreateOrder(request:NextRequest) {
         
 
         const orderData = await OrderModel.create({accountId, userPersonalInfo, items})
-        return NextResponse.json({cartData, userPersonalInfo, cookiesData, items, status:202})
+        return NextResponse.json({cartData, userPersonalInfo, cookiesData, items},{status:202})
     } catch (error:any) {
         return NextResponse.json({ error: error.message }, { status: 400 });
     }

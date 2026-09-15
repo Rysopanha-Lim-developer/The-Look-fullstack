@@ -12,6 +12,7 @@ export default function RegisterPage(){
     let [email, setEmail] = useState("");
     let [password, setPassword] = useState("");
     let [apiFeedback, setApiFeedback] = useState<ApiFeedback | any>({});
+    let [apiStatus, setApiStatus] = useState(0);
 
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     const isEmailValid = emailRegex.test(email);
@@ -36,10 +37,12 @@ export default function RegisterPage(){
         });
         const apiFeedback = await res.json();
         setApiFeedback(apiFeedback)
-        if(apiFeedback.status === 201){
+        setApiStatus(res.status)
+        if(res.ok){
             route.push("/");
         }
     }
+    console.log(apiStatus)
     return(
         <section className="w-full h-100% flex flex-col items-center justify-start">
             <h1>Welcome to The Look</h1>
@@ -123,7 +126,9 @@ export default function RegisterPage(){
                     </div>
                 </form>
                 <div>
-                    <p>{apiFeedback.message}</p>
+                    {
+                        apiStatus != 0 ?  <p>{apiFeedback.message} {apiStatus}</p> : <p></p>
+                    }
                 </div>
             </article>
         </section>

@@ -3,11 +3,10 @@ import { User, UserModel } from "@/Backend/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { cookies } from "next/headers";
-import z from "zod";
 
 export async function LoginValidation(request:NextRequest) {
-    const {username, email, password} = await request.json();
     try {
+        const {username, email, password} = await request.json();
         await dbConnection();
         const userReference:User = await UserModel.findOne({email}).lean();
         if(!userReference){
@@ -17,11 +16,17 @@ export async function LoginValidation(request:NextRequest) {
         //This compare the incoming password and the one in the db
         const isUser = await bcrypt.compare(password, userReference.password)
         if (username !== userReference.username) {
-            return NextResponse.json({ message: "Username not found", status: 422 });
+            return NextResponse.json(
+                { message: "Username not found" },
+                {status: 422}
+            );
         }
 
         if (!isUser) {
-            return NextResponse.json({ message: "Incorrect password", status: 422 });
+            return NextResponse.json(
+                { message: "Incorrect password" },
+                {status: 422}
+            );
         }
 
         const cookie = await cookies();
@@ -34,11 +39,13 @@ export async function LoginValidation(request:NextRequest) {
             maxAge: 60 * 60 * 24 * 30, // 30 days max life
         });
 
-        return NextResponse.json({ message: "Successfully login", status: 200 });
+        return NextResponse.json({ message: "Successfully login" }, {status: 200});
     } catch (error:any) {
-        return NextResponse.json({
+        return NextResponse.json(
+            {
                 message : error.message || "something went wrong",
-                staus : 422
-            })
+            },
+            {status : 422}
+        )
     }
 }

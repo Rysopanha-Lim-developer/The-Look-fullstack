@@ -3,7 +3,7 @@ import { UserModel } from "@/Backend/models/user.model";
 import { dbConnection } from "@/Backend/lib/dbConnection";
 import z from "zod";
 
-const registerSchema = z.object({
+export const registerSchema = z.object({
     username: z.string().min(5, "Username must be at least 5 characters").max(12, "Username must be at most 12 characters"),
     email: z.email(),
     password: z.string().min(4, "Password must be at least 4 characters").max(8, "Password must be at most 8 characters"),
@@ -17,7 +17,7 @@ export async function CreateNewUser(request:NextRequest) {
         const checkedInput = registerSchema.safeParse(body)
         if (!checkedInput.success) {
             return NextResponse.json(
-                { message: "Please check your input", status: 400 },
+                { message: "Please check your input" },
                 {status: 400}
             );
         }
@@ -31,8 +31,7 @@ export async function CreateNewUser(request:NextRequest) {
             if (existedUser.username === username) {
                 return NextResponse.json(
                     {
-                        message: `Username already existed. Please choose another username.`,
-                        status: 403
+                        message: `Username already existed. Please choose another username.`
                     },
                     { status: 403 }
             );
@@ -40,8 +39,7 @@ export async function CreateNewUser(request:NextRequest) {
             if (existedUser.email === email as string) {
                 return NextResponse.json(
                     {
-                        message: `Email has been used. Please use another email.`,
-                        status: 403
+                        message: `Email has been used. Please use another email.`
                     },
                     { status: 403 }
                 );
@@ -51,8 +49,7 @@ export async function CreateNewUser(request:NextRequest) {
 
         return NextResponse.json(
             { 
-                message: "Registered successfully",
-                status: 201
+                message: "Registered successfully"
             },
             {
                 status: 201
@@ -61,8 +58,7 @@ export async function CreateNewUser(request:NextRequest) {
     }catch (error: any) {
         return NextResponse.json(
         { 
-            error: error.message || "Something went wrong",
-            status: 500
+            error: error.message || "Something went wrong"
         },
         {
             status: 500
