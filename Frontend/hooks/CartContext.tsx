@@ -14,11 +14,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<Product[]>([]);
 
     const addItem = (item: Product) => {
-    setItems(prev => {
-            const isAlreadyInCart = prev.some(i => i._id === item._id);
-            if (isAlreadyInCart) return prev; // already there, do nothing
-            return [...prev, item];
-        });
+        setItems(prev => {
+                const isAlreadyInCart = prev.some(i => i._id === item._id);
+                if (isAlreadyInCart) return prev;
+                return [...prev, item];
+            });
     };
 
 

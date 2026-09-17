@@ -15,7 +15,7 @@ export default function OrderDisplayCard({props}:{props: Order[]}){
                     <p>Fullname: {order.userPersonalInfo.firstname} {order.userPersonalInfo.lastname}</p>
                     <p>Email: {order.userPersonalInfo.email}</p>
                     <p>Create At: {formattedDate}</p>
-                    <p>Number of items: {order.items.length}</p>
+                    <p>Number of items: {order.orderItems.length}</p>
                 </article>
                 )
             })}

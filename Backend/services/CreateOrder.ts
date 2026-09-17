@@ -9,7 +9,7 @@ import { cookies } from "next/headers";
 export async function CreateOrder(request:NextRequest) {
     try {
         await dbConnection();
-        const {cartData, userPersonalInfo} = await request.json();
+        const {items, userPersonalInfo} = await request.json();
 
         const cookiesSession = await cookies();
         const cookiesString = cookiesSession.get("session");
@@ -33,9 +33,9 @@ export async function CreateOrder(request:NextRequest) {
             return priceMap;
         }
 
-        const priceMap = await GetRealPrices(cartData);
+        const priceMap = await GetRealPrices(items);
 
-        const items: OrderItem[] = cartData.map((item: Product) => {
+        const orderItems: OrderItem[] = items.map((item: Product) => {
             const priceAtPurchase = priceMap.get(item._id.toString());
             if (priceAtPurchase === undefined) {
                 throw new Error(`Product ${item._id} not found`);
@@ -47,8 +47,8 @@ export async function CreateOrder(request:NextRequest) {
         });
         
 
-        const orderData = await OrderModel.create({accountId, userPersonalInfo, items})
-        return NextResponse.json({cartData, userPersonalInfo, cookiesData, items},{status:202})
+        const orderData = await OrderModel.create({accountId, userPersonalInfo, orderItems})
+        return NextResponse.json({items, userPersonalInfo, cookiesData, orderItems},{status:202})
     } catch (error:any) {
         return NextResponse.json({ error: error.message }, { status: 400 });
     }

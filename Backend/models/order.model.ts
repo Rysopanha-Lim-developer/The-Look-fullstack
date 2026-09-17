@@ -11,7 +11,7 @@ export type Order = {
     _id: string;
     accountId: Types.ObjectId;
     userPersonalInfo: UserPersonalInfo;
-    items: OrderItem[];
+    orderItems: OrderItem[];
     createdAt:Date
 };
 
@@ -19,7 +19,7 @@ const OrderSchema = new Schema<Order>(
     {
         accountId: { type: Schema.Types.ObjectId, required: true, ref: "UserModel" },
         userPersonalInfo: {type: Object, required: true},
-        items: [
+        orderItems: [
             {
                 productId: { type: Schema.Types.ObjectId, required: true, ref: "ProductModel" },
                 priceAtPurchase: { type: Number, required: true },
