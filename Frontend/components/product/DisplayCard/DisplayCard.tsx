@@ -1,5 +1,6 @@
 import { Product } from "@/Backend/models/product.model";
 import Image from "next/image";
+import Link from "next/link";
 
 export type DisplayCardProps = {
     data: Omit<Product, "material" | "brand" | "color">
@@ -17,9 +18,9 @@ export default function DisplayCard({data}: DisplayCardProps){
                         <p>{data.name}</p>
                         <p>${data.price}</p>
                     </div>
-                    <a href={`/${data.slug}`}>
-                        <button>See detail</button>
-                    </a>
+                    <Link className="btn" href={`/${data.slug}`}>
+                        See detail
+                    </Link>
                 </div>
             </div>
         </article>

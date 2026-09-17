@@ -1,24 +1,18 @@
 "use client"
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useCart } from "@/Frontend/hooks/CartContext";
 import { Product } from "@/Backend/models/product.model";
 import ProductDetailSkeleton from "@/Frontend/components/common/ProductDetailLoading/ProductSkeleton";
 
 
 export default function ProductDetail({props}: {props: Product}) {
+    const { addItem } = useCart()
     let detail = props
     let [loading, setLoading] = useState(false);
-    let [cartItems, setCartItems] = useState<Product[] | null>(null);
     let [favoriteItems, setFavoriteItems] = useState<Product[] | null>(null);
 
     useEffect(()=> {
-        setCartItems(() => {
-            const savedItems = localStorage.getItem("cart-items")
-            if (!savedItems || savedItems === "undefined" || savedItems === "null") {
-                return []
-            }
-            return JSON.parse(savedItems)
-        })
         setFavoriteItems(() => {
             const savedItems = localStorage.getItem("favorite-items")
             if (!savedItems || savedItems === "undefined" || savedItems === "null") {
@@ -29,21 +23,10 @@ export default function ProductDetail({props}: {props: Product}) {
     },[])
 
     useEffect(() => {
-        if (cartItems === null || cartItems === undefined) return //This prevent items to reset to [] when the page loaded
-        localStorage.setItem("cart-items", JSON.stringify(cartItems))
-    }, [cartItems]);
-
-    useEffect(() => {
         if (favoriteItems === null || favoriteItems === undefined) return //This prevent items to reset to [] when the page loaded
         localStorage.setItem("favorite-items", JSON.stringify(favoriteItems))
     }, [favoriteItems]);
 
-    function AddItemToCart(){
-        if (!detail) {
-            return; 
-        }
-        setCartItems(cartItems => ([...cartItems?? [], detail]))
-    };
     function AddItemToFavorite(){
         if (!detail) {
             return; 
@@ -84,11 +67,11 @@ export default function ProductDetail({props}: {props: Product}) {
                 </div>
             </div>
             <div className=" flex w-full justify-center gap-5">
-                <button className="btn" onClick={AddItemToCart}>
-                    <p>Add to cart</p>
+                <button className="btn" onClick={()=>{addItem(detail)}}>
+                    Add to cart
                 </button>
                 <button className="btn" onClick={AddItemToFavorite}>
-                    <p>Add to favorite</p>
+                    Add to favorite
                 </button>
             </div>
         </section>

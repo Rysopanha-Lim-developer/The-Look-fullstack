@@ -22,7 +22,6 @@ export default function DetailPage({params}: PageParams){
 }
 
 async function Details({params}:PageParams) {
-    "use cache"
     await dbConnection();
     const {slug} = await params;
     let productDetail:Product = await ProductModel.findOne({slug: slug}).lean()

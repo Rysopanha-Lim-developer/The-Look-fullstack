@@ -12,7 +12,7 @@ export default function Checkout(){
     let [userPersonalInfo, setUserPersonalInfo] = useState<UserPersonalInfo | null>(null)
     let [cookiesData, setCookiesData] = useState<{username: string, email:string} | null> (null)
     let [loading, setLoading] = useState(true);
-    let [apiStatus, setApiStatus] = useState();
+    let [apiStatus, setApiStatus] = useState(0);
 
 
     useEffect(() => {
@@ -58,11 +58,11 @@ export default function Checkout(){
                 body: JSON.stringify({cartData, userPersonalInfo})
             });
             const res = await req.json();
-            if(res.status !== 202){
+            if(!req.ok){
                 throw new Error("Cannot create order");
             };
 
-            setApiStatus(res.status)
+            setApiStatus(req.status)
             setCookiesData(res.cookiesData)
             setCartData(res.cartData)
             setUserPersonalInfo(res.userPersonalInfo)
