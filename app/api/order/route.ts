@@ -13,13 +13,24 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message: error.message }, { status: error.status });
         }
         return NextResponse.json(
-        { message: error.message || "Something went wrong" },
-        { status: 500 }
+            { message: error.message || "Something went wrong" },
+            { status: 500 }
         );
     }
 }
 
 
 export async function GET(){
-    return GetCookies()
+    try {
+        const result = await GetCookies();
+        return NextResponse.json(result, {status: 200})
+    } catch (error: any) {
+        if (error instanceof HttpError) {
+        return NextResponse.json({ message: error.message }, { status: error.status });
+        }
+        return NextResponse.json(
+            { message: error.message || "Something went wrong" },
+            { status: 500 }
+        );
+    }
 }
