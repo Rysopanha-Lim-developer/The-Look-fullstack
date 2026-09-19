@@ -14,7 +14,7 @@ export type DetailProps = {
 
 export default function DetailPage({params}: PageParams){
     return(
-        <Suspense fallback={<ProductDetailSkeleton/>}>'
+        <Suspense fallback={<ProductDetailSkeleton/>}>
             <Details params={params}/>
         </Suspense>
     )

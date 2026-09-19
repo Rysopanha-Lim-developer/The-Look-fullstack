@@ -1,5 +1,5 @@
 "use client"
-
+// This need to update the form to match the new register format
 import { useState } from "react"
 import { useRouter } from "next/navigation";
 
