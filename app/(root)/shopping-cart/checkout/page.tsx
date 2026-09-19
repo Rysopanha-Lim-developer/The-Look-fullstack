@@ -1,31 +1,20 @@
 "use client"
-
-import { Product } from "@/Backend/models/product.model";
+    
 import { useState, useEffect } from "react";
 import { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
 import OrderReceipt from "@/Frontend/components/product/Receipt/OrderReceipt";
 import OrderReceiptSkeleton from "@/Frontend/components/common/RecieptSkeleton/OrderReceiptSkeleton";
+import { useCart } from "@/Frontend/hooks/CartContext";
 
 export default function Checkout(){
     // this state and useEffect is for getting data from local storage and sent to the api
-    let [cartData, setCartData] = useState<Product[]>([]);
+    const {items} = useCart();
     let [userPersonalInfo, setUserPersonalInfo] = useState<UserPersonalInfo | null>(null)
     let [cookiesData, setCookiesData] = useState<{username: string, email:string} | null> (null)
     let [loading, setLoading] = useState(true);
     let [apiStatus, setApiStatus] = useState(0);
 
 
-    useEffect(() => {
-        const unfilteredData:[] = JSON.parse(localStorage.getItem("cart-items")?? "[]")
-        // the ?? will return the value of its right side if the left side is null or undefind
-
-        const filteredData = unfilteredData.filter((item:any, index:any, self:any) => 
-            index === self.findIndex((t:any) => t._id === item._id)
-        );
-
-        setCartData(filteredData)
-        localStorage.setItem("cart-items", JSON.stringify(filteredData))
-    }, [])
 
     useEffect(() => {
         const userPersonalInfo:UserPersonalInfo = JSON.parse(localStorage.getItem("personal-data")?? "{}")
@@ -33,7 +22,7 @@ export default function Checkout(){
     },[])
 
     useEffect(() => {
-        async function GetReciept(){
+        async function GetCookies(){
             try {
                 const req = await fetch("/api/order", {
                     method: "GET",
@@ -47,7 +36,7 @@ export default function Checkout(){
                 setLoading(false)
             }
         };
-        GetReciept();
+        GetCookies();
     }, []);
 
     async function SendOrder(){
@@ -55,20 +44,18 @@ export default function Checkout(){
             const req = await fetch("/api/order", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({cartData, userPersonalInfo})
+                body: JSON.stringify({items, userPersonalInfo})
             });
             const res = await req.json();
             if(!req.ok){
-                throw new Error("Cannot create order");
+                throw new Error(`Cannot create order ${req.status}`);
             };
 
-            setApiStatus(req.status)
-            setCookiesData(res.cookiesData)
-            setCartData(res.cartData)
-            setUserPersonalInfo(res.userPersonalInfo)
-            localStorage.setItem("cart-items", JSON.stringify([]))
+            setApiStatus(req.status);
+            setCookiesData(res.cookiesData);
+            setUserPersonalInfo(res.userPersonalInfo);
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
     }
     if(loading){
@@ -80,7 +67,7 @@ export default function Checkout(){
             <article className="w-max flex flex-col items-center justify-center">
                 {userPersonalInfo && cookiesData && (
                 <OrderReceipt
-                    cartData={cartData}
+                    cartData={items}
                     cookiesData={cookiesData}
                     userPersonalInfo={userPersonalInfo}
                 />

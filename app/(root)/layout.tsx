@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Heart, ShoppingCart, User, ShieldLock, ArrowRightLeft, BanknoteArrowDown, Mail, Phone, Send  } from "lucide-react"
 import { Facebook, Tiktok, Instagram, XFormerlyTwitter  } from "@thesvg/react";
+import { CartProvider } from "@/Frontend/hooks/CartContext";
 
 
 export default function RootLayout({children}: {children: React.ReactNode}){
@@ -58,7 +59,9 @@ export default function RootLayout({children}: {children: React.ReactNode}){
                 </nav>
             </header>
             <main>
-                {children}
+                <CartProvider>
+                    {children}
+                </CartProvider>
             </main>
             <footer className="Footer print:hidden">
                 <ul className="media">
