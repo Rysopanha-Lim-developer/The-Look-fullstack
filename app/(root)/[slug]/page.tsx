@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { dbConnection } from "@/Backend/lib/dbConnection";
 import ProductDetail from "@/Frontend/components/product/ProductDetails/ProductDetails";
 import ProductDetailSkeleton from "@/Frontend/components/common/ProductDetailLoading/ProductSkeleton";
-import { GetProductDetail, GetPrice } from "@/Backend/services/GetProductDetail";
 
 export type PageParams = {
     params: Promise<Pick<Product, "slug">>
