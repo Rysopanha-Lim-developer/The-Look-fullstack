@@ -27,6 +27,13 @@ export default function RegisterPage(){
         setPassword(e.target.value);
     };
 
+    function getPasswordStatusColor(password: string, errors?: string[]) {
+        if (password.length === 0) return "black";
+        if (errors && errors.length > 0) return "rgb(220, 38, 38)"; // red
+        if (password.length < 8) return "rgb(220, 38, 38)"; // red
+        return "rgb(22, 163, 74)"; // green
+    }
+
     //async & await is usable anywhere except when you try to use it as client component directly
     async function handelRegister(e:React.SubmitEvent<HTMLFormElement>){
         e.preventDefault();
@@ -36,13 +43,13 @@ export default function RegisterPage(){
             body: JSON.stringify({username, email, password})
         });
         const apiFeedback = await res.json();
-        setApiFeedback(apiFeedback)
-        setApiStatus(res.status)
+        setApiFeedback(apiFeedback);
+        setApiStatus(res.status);
+
         if(res.ok){
             route.push("/");
         }
     }
-    console.log(apiStatus)
     return(
         <section className="w-full h-100% flex flex-col items-center justify-start">
             <h1>Welcome to The Look</h1>
@@ -98,23 +105,23 @@ export default function RegisterPage(){
                     <div className="w-full flex flex-col justify-between gap-1">
                         <label className="w-[30%]" htmlFor="password">Password</label>
                         <div className="flex flex-col w-[70%] justify-center items-end">
-                            <input type="text" name="password" className="rounded-sm w-full px-1" minLength={4} maxLength={8} required value={password} placeholder="theLook4EV" onChange={handleChangePassword}  
-                            style={
-                                {
-                                    border: password.length === 0 ? `1.5px solid black` :
-                                            password.length < 4 ? `1.5px solid rgb(220, 38, 38)` : 
-                                            `1.5px solid rgb(22, 163, 74)`
-                                }
-                            } />
-                            <p className="text-xs self-start" 
-                                style={
-                                    {
-                                    color: password.length === 0 ? `black` :
-                                            password.length < 4 ? `rgb(220, 38, 38)` : 
-                                            `rgb(22, 163, 74)`
-                                    }
-                                }>
-                                Password must be between 4 characters and 8 characters
+                            <input type="text" name="password" className="rounded-sm w-full px-1"
+                                minLength={8}
+                                required
+                                value={password}
+                                placeholder="theLook4EV$$"
+                                onChange={handleChangePassword}
+                                style={{
+                                    border: `1.5px solid ${getPasswordStatusColor(password, apiFeedback.errors)}`,
+                                }}
+                            />
+
+                            <p className="text-xs self-start" style={{ color: getPasswordStatusColor(password, apiFeedback.errors) }}>
+                                {apiFeedback.errors && apiFeedback.errors.length > 0 ? (
+                                    apiFeedback.errors.map((err: string, i: number) => <span key={i} className="block">{err}</span>)
+                                ) : (
+                                    "Password must be between 8 characters and 10 characters"
+                                )}
                             </p>
                         </div>
                     </div>

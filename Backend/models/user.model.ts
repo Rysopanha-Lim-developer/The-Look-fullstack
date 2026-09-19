@@ -33,8 +33,8 @@ const UserSchema = new Schema<User>(
             required: [true, 'Password is required'],
             unique: true,
             trim: true,
-            minlength:[4, "Password must be at lease 4 characters"], 
-            maxlength:[8, "Password must not exced 8 characters"],
+            minlength:[8, "Password must be at lease 4 characters"], 
+            maxlength:[10, "Password must not exced 8 characters"],
         }
     }, 
     { 
