@@ -10,7 +10,7 @@ export default function OrderDisplayCard({props}:{props: Order[]}){
                     timeStyle: 'short',
                 });
                 return (
-                <article key={order.accountId.toString()} className="border rounded-md px-2 py-1.5">
+                <article key={order._id.toString()} className="border rounded-md px-2 py-1.5">
                     <h3 className="m-0">Order ID: {order._id.toString()}</h3>
                     <p>Fullname: {order.userPersonalInfo.firstname} {order.userPersonalInfo.lastname}</p>
                     <p>Email: {order.userPersonalInfo.email}</p>
