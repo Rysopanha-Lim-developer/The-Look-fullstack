@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import { UserModel } from "@/Backend/models/user.model";
 import { dbConnection } from "@/Backend/lib/dbConnection";
 import z from "zod";
+import { HttpError } from "@/Backend/lib/errors";
 
 export const registerSchema = z.object({
     username: z.string().min(5, "Username must be at least 5 characters").max(12, "Username must be at most 12 characters"),
@@ -16,19 +16,14 @@ export const registerSchema = z.object({
 });
 
 
-export async function CreateNewUser(request:NextRequest) {
-    try{
-        const body = await request.json();
-
+export async function CreateNewUser(body:unknown) {
         const checkedInput = registerSchema.safeParse(body)
         if (!checkedInput.success) {
             const { fieldErrors } = z.flattenError(checkedInput.error);
             const allMessages = Object.values(fieldErrors).flat(); //convert the obj above to array for display
-            return NextResponse.json(
-                { message: "Please check your input", errors: allMessages },
-                { status: 400 }
-            );
+            throw new HttpError("Please check your input", 400, { errors: allMessages });
         }
+
         const {username, email, password} = checkedInput.data;
 
         await dbConnection();
@@ -37,40 +32,13 @@ export async function CreateNewUser(request:NextRequest) {
         });
         if (existedUser) {
             if (existedUser.username === username) {
-                return NextResponse.json(
-                    {
-                        message: `Username already existed. Please choose another username.`
-                    },
-                    { status: 403 }
-            );
+                throw new HttpError("Username already existed. Please choose another username.", 403);
             }
             if (existedUser.email === email as string) {
-                return NextResponse.json(
-                    {
-                        message: `Email has been used. Please use another email.`
-                    },
-                    { status: 403 }
-                );
+                throw new HttpError("Email has been used. Please use another email.", 403);
             }
         }
         await UserModel.create({username, email, password});
 
-        return NextResponse.json(
-            { 
-                message: "Registered successfully"
-            },
-            {
-                status: 201
-            }
-        ); 
-    }catch (error: any) {
-        return NextResponse.json(
-        { 
-            message: error.message || "Something went wrong"
-        },
-        {
-            status: 500
-        }
-        );
-    }
+        return { message: "Registered successfully" };
 }

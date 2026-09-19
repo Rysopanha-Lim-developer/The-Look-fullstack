@@ -5,13 +5,13 @@ import { cookies } from "next/headers";
 import { HttpError } from "@/Backend/lib/errors";
 
 
-type LoginPayload = {
+export type LoginANDRegesterPayload = {
     username: string;
     email: string;
     password: string;
 }
 
-export async function LoginValidation({ username, email, password }: LoginPayload) {
+export async function LoginValidation({ username, email, password }: LoginANDRegesterPayload) {
     await dbConnection();
     const userReference:User = await UserModel.findOne({email}).lean();
     if (!userReference) {
