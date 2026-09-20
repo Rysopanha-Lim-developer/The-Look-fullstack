@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function WomenNavbar(){
     return(
-        <nav className="nav-bar sticky pb-2 top-16 z-10 bg-[background]">
+        <nav className="nav-bar">
             <ul className="nav-bar-ul w-full">
                 <li>
                     <Link  href="#tshirts" className="nav-link text-[1.2rem]">

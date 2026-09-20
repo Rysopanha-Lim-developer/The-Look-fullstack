@@ -8,7 +8,7 @@ import { CartProvider } from "@/Frontend/hooks/CartContext";
 export default function RootLayout({children}: {children: React.ReactNode}){
     return(
         <>
-            <header className="flex w-full print:hidden sticky top-0 z-10 bg-[background]">
+            <header className="flex w-full print:hidden">
                 <nav className="nav-bar">
                     <ul className="nav-bar-ul w-[20%]">
                         <li>
@@ -63,7 +63,7 @@ export default function RootLayout({children}: {children: React.ReactNode}){
                     {children}
                 </CartProvider>
             </main>
-            <footer className="Footer print:hidden">
+            <footer className="Footer print:hidden ">
                 <ul className="media">
                     <li>Follow Us</li>
                     <li ><Facebook variant="mono" width={24} height={24} /> The Look Cambodia</li>

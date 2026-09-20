@@ -19,7 +19,7 @@ export default function AccountLayout({children}: {children: React.ReactNode}){
                         <Link href="/account/order"><h3 className="nav-link">My Order</h3></Link>
                         <Link href="/account/payment"><h3 className="nav-link">Payment</h3></Link>
                         <Link href="/shopping-cart"><h3 className="nav-link">My Cart</h3></Link>
-                        <Link href="/wish-list"><h3 className="nav-link">Wishlist</h3></Link>
+                        <Link href="/favorite"><h3 className="nav-link">Favorite</h3></Link>
                         <Link href="/account/setting"><h3 className="nav-link">Setting</h3></Link>
                     </div>
                     <div className="w-full flex flex-col items-start justify-start pl-1.5">

@@ -16,11 +16,13 @@ export default function CartPage(){
                     Checkout Here
                 </Link>
             </div>
-            <div className="w-full grid grid-cols-4 gap-4 px-2.5">
+            {items.length == 0 ? <div className="w-full h-dvh flex items-top justify-center py-28"><h1>Your cart is empty</h1></div> : 
+                <div className="w-full grid grid-cols-4 gap-4 px-2.5">
                 {items.map((eachData:Product) => {
                     return <DisplayCard key={eachData.slug} data={eachData} />
                 })}
             </div>
+            }
         </>
     )
 }
