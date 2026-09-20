@@ -20,14 +20,13 @@ export default function AccountLayout({children}: {children: React.ReactNode}){
                         <Link href="/account/payment"><h3 className="nav-link">Payment</h3></Link>
                         <Link href="/shopping-cart"><h3 className="nav-link">My Cart</h3></Link>
                         <Link href="/favorite"><h3 className="nav-link">Favorite</h3></Link>
-                        <Link href="/account/setting"><h3 className="nav-link">Setting</h3></Link>
                     </div>
                     <div className="w-full flex flex-col items-start justify-start pl-1.5">
                         <Link href=""><h3 className="nav-link">Customer Support</h3></Link>
-                        <a href=""><h3 className="nav-link">Log out</h3></a>
+                        <Link href="/account/logout" className="btn bg-red-600 w-[50%] hover:bg-red-500 active:bg-red-600">Log out</Link>
                     </div>
                 </section>
-                <section className="w-[70%] flex flex-col pt-2.5">
+                <section className="w-[70%] flex flex-col pt-2.5 relative">
                     {children}
                 </section>
             </main>

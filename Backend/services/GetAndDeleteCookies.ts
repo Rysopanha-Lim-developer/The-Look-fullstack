@@ -10,3 +10,12 @@ export async function GetCookies() {
     const cookiesData:{username: string, email:string} = JSON.parse(cookiesString.value)
     return cookiesData
 }
+
+export async function DeleteCookies() {
+    const cookiesSession = await cookies();
+    const cookiesString = cookiesSession.delete("session");
+    if(!cookiesString){
+        throw new HttpError("There is no current session available.", 401)
+    };
+    return  { message: "Successfully sign out" }
+}

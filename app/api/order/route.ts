@@ -1,5 +1,5 @@
 import { CreateOrder } from "@/Backend/services/CreateOrder";
-import { GetCookies } from "@/Backend/services/GetCookies";
+import { GetCookies } from "@/Backend/services/GetAndDeleteCookies";
 import { NextRequest, NextResponse } from "next/server";
 import { HttpError } from "@/Backend/lib/errors";
 

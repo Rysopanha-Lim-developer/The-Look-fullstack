@@ -6,9 +6,9 @@
   --foreground: #121212;
 
   /* bg color */
-    --header-btn : rgb(35, 30, 30);
-    --header-btn-hover : rgba(56, 55, 55, 1);
-    --header-btn-active : rgba(36, 36, 36, 0.7);
+    --header-btn : rgb(0, 0, 0);
+    --header-btn-hover : rgb(31, 29, 29);
+    --header-btn-active : rgba(0, 0, 0, 0.7);
 }
 
 html, body{

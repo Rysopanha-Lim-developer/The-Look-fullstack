@@ -3,6 +3,8 @@ import { dbConnection } from "@/Backend/lib/dbConnection";
 import z from "zod";
 import { HttpError } from "@/Backend/lib/errors";
 
+//Need to add function to create cookies after register
+
 export const registerSchema = z.object({
     username: z.string().min(5, "Username must be at least 5 characters").max(12, "Username must be at most 12 characters"),
     email: z.email(),

@@ -41,6 +41,7 @@ export default function LoginPage(){
         setApiFeedback(apiFeedback)
         setApiStatus(res.status)
         if(res.ok){
+            route.refresh();
             route.push("/");
         }
     }

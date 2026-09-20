@@ -6,8 +6,7 @@ const nextConfig: NextConfig = {
   //after install write the one line below
   reactCompiler: true, //This line eliminate the need of useMemo React hook
 
-
-  cacheComponents: true //This enable caching system 'use cache' for cache boundaries 
+  cacheComponents: true, //This enable caching system 'use cache' for cache boundaries 
 };
 
 export default nextConfig;
