@@ -106,7 +106,7 @@ export default function LoginPage(){
                     <div className="w-full flex flex-col justify-between gap-1">
                         <label className="w-[30%]" htmlFor="password">Password</label>
                         <div className="flex flex-col w-[70%] justify-center items-end">
-                            <input type="text" name="password" className="rounded-sm w-full px-1" minLength={4} maxLength={8} required value={password} placeholder="theLook4EV" onChange={handleChangePassword}  
+                            <input type="text" name="password" className="rounded-sm w-full px-1" minLength={8} maxLength={10} required value={password} placeholder="theLook4EV" onChange={handleChangePassword}  
                             style={
                                 {
                                     border: password.length === 0 ? `1.5px solid black` :
@@ -124,7 +124,7 @@ export default function LoginPage(){
                                             `rgb(22, 163, 74)`  
                                     }
                                 }>
-                                    {apiFeedback.message == "Incorrect password"? "Incorrect password" : "Password must be between 4 characters and 8 characters"}
+                                    {apiFeedback.message == "Incorrect password"? "Incorrect password" : "Password must be between 8 characters and 10 characters"}
                             </p>
                         </div>
                     </div>
