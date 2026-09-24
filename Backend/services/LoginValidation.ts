@@ -3,6 +3,8 @@ import { User, UserModel } from "@/Backend/models/user.model";
 import bcrypt from "bcrypt";
 import { cookies } from "next/headers";
 import { HttpError } from "@/Backend/lib/errors";
+import { registerANDLoginSchema } from "@/Backend/services/CreateNewUser";
+import z from "zod";
 
 
 export type LoginANDRegesterPayload = {
@@ -11,7 +13,15 @@ export type LoginANDRegesterPayload = {
     password: string;
 }
 
-export async function LoginValidation({ username, email, password }: LoginANDRegesterPayload) {
+export async function LoginValidation(body: LoginANDRegesterPayload) {
+    const checkedInput = registerANDLoginSchema.safeParse(body)
+    if (!checkedInput.success) {
+        const { fieldErrors } = z.flattenError(checkedInput.error);
+        const allMessages = Object.values(fieldErrors).flat(); //convert the obj above to array for display
+        throw new HttpError("Please check your input", 400, { errors: allMessages });
+    }
+
+    const {username, email, password} = checkedInput.data;
     await dbConnection();
     const userReference:User = await UserModel.findOne({email}).lean();
     if (!userReference) {

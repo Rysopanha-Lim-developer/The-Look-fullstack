@@ -2,10 +2,11 @@ import { UserModel } from "@/Backend/models/user.model";
 import { dbConnection } from "@/Backend/lib/dbConnection";
 import z from "zod";
 import { HttpError } from "@/Backend/lib/errors";
+import { createHash } from "crypto";
 
 //Need to add function to create cookies after register
 
-export const registerSchema = z.object({
+export const registerANDLoginSchema = z.object({
     username: z.string().min(5, "Username must be at least 5 characters").max(12, "Username must be at most 12 characters"),
     email: z.email(),
     password: z.string()
@@ -17,9 +18,14 @@ export const registerSchema = z.object({
         .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
 });
 
+export function HashCredential(username: string, email: string, password: string): string {
+    const combined = JSON.stringify({ username, email, password }); 
+    return createHash("sha256").update(combined).digest("hex"); // 64 hex chars, safely under bcrypt's 72-byte limit
+}
+
 
 export async function CreateNewUser(body:unknown) {
-        const checkedInput = registerSchema.safeParse(body)
+        const checkedInput = registerANDLoginSchema.safeParse(body)
         if (!checkedInput.success) {
             const { fieldErrors } = z.flattenError(checkedInput.error);
             const allMessages = Object.values(fieldErrors).flat(); //convert the obj above to array for display
@@ -40,7 +46,8 @@ export async function CreateNewUser(body:unknown) {
                 throw new HttpError("Email has been used. Please use another email.", 403);
             }
         }
-        await UserModel.create({username, email, password});
+        const hashedCrediential = HashCredential(username, email, password)
+        await UserModel.create({username, email, password, hashedCrediential});
 
         return { message: "Registered successfully" };
 }

@@ -1,15 +1,16 @@
-import {Schema, model, models} from "mongoose";
+import {Schema, model, models, trusted} from "mongoose";
 import bcrypt from "bcrypt";//This is for hashing password
 
+
 export type User = {
-    _id?: string
+    _id?: string,
+    hashedCrediential: string,
     username: string,
     email: string,
     password: string,
 };
 
 const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-
 
 const UserSchema = new Schema<User>(
     {
@@ -35,6 +36,12 @@ const UserSchema = new Schema<User>(
             trim: true,
             minlength:[8, "Password must be at lease 4 characters"], 
             maxlength:[10, "Password must not exced 8 characters"],
+        },
+        hashedCrediential:{
+            type: String,
+            required: true,
+            unique: true,
+            trim:true
         }
     }, 
     { 
