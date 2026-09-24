@@ -5,6 +5,8 @@ import { cookies } from "next/headers";
 import { HttpError } from "@/Backend/lib/errors";
 import { registerANDLoginSchema } from "@/Backend/services/CreateNewUser";
 import z from "zod";
+import { signAccessToken } from "@/Backend/lib/jwt";
+import { HashCredential } from "@/Backend/lib/jwt";
 
 
 export type LoginANDRegesterPayload = {
@@ -31,14 +33,26 @@ export async function LoginValidation(body: LoginANDRegesterPayload) {
         throw new HttpError("Username not found", 422);
     }
     //This compare the incoming password and the one in the db
-    const isUser = await bcrypt.compare(password, userReference.password)
-    if (!isUser) {
+    const isPassword = await bcrypt.compare(password, userReference.password)
+    if (!isPassword) {
         throw new HttpError("Incorrect password", 422);
     }
 
+    const credential = HashCredential(username, email, password); 
+    const isUser = await bcrypt.compare(credential, userReference.hashedCredential);
+    if(!isUser){
+        throw new HttpError("Incorrect credential", 422);
+    }
+
+    const token = await signAccessToken({
+        sub: userReference._id!.toString(),
+        username: userReference.username,
+        email: userReference.email
+    })
+
     const cookie = await cookies();
 
-    cookie.set('session', JSON.stringify({ username: username, email: email }), {
+    cookie.set('access_token', token, {
         httpOnly: true,      // JS on the client can't read it (XSS protection)
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',

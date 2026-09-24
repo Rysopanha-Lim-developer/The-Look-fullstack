@@ -1,6 +1,5 @@
-import bcrypt from "bcrypt";
 import { SignJWT, jwtVerify } from "jose";
-import { LoginANDRegesterPayload } from "@/Backend/services/LoginValidation";
+import { createHash } from "crypto";
 
 if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not set");
@@ -8,8 +7,14 @@ if (!process.env.JWT_SECRET) {
 const encoder = new TextEncoder();
 const JWT_SECRET = encoder.encode(process.env.JWT_SECRET)
 
+export type jwtPayload = {
+    sub: string,
+    username: string,
+    email: string
+}
 
-export async function signAccessToken(payload: LoginANDRegesterPayload) {
+
+export async function signAccessToken(payload: jwtPayload) {
     return new SignJWT(payload)
         .setProtectedHeader({ alg: "HS256" })
         .setIssuedAt()
@@ -18,7 +23,12 @@ export async function signAccessToken(payload: LoginANDRegesterPayload) {
 }
 
 export async function verifyAccessToken(token: string) {
-    const { payload } = await jwtVerify<LoginANDRegesterPayload>(token, JWT_SECRET);
+    const { payload } = await jwtVerify<jwtPayload>(token, JWT_SECRET);
     return payload;
+}
+
+export function HashCredential(username: string, email: string, password: string): string {
+    const combined = JSON.stringify({ username, email, password }); 
+    return createHash("sha256").update(combined).digest("hex"); // 64 hex chars, safely under bcrypt's 72-byte limit
 }
 

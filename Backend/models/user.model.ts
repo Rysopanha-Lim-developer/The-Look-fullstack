@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";//This is for hashing password
 
 export type User = {
     _id?: string,
-    hashedCrediential: string,
+    hashedCredential: string,
     username: string,
     email: string,
     password: string,
@@ -37,7 +37,7 @@ const UserSchema = new Schema<User>(
             minlength:[8, "Password must be at lease 4 characters"], 
             maxlength:[10, "Password must not exced 8 characters"],
         },
-        hashedCrediential:{
+        hashedCredential:{
             type: String,
             required: true,
             unique: true,
