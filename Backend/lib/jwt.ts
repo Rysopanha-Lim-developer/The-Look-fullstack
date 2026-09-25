@@ -13,7 +13,6 @@ export type jwtPayload = {
     email: string
 }
 
-//add token verification for auto login 
 //prep refresh token
 
 
@@ -21,7 +20,7 @@ export async function signAccessToken(payload: jwtPayload) {
     return new SignJWT(payload)
         .setProtectedHeader({ alg: "HS256" })
         .setIssuedAt()
-        .setExpirationTime(process.env.JWT_EXPIRES_IN ?? "1min")
+        .setExpirationTime(process.env.JWT_EXPIRES_IN ?? "12h")
         .sign(JWT_SECRET);
 }
 
