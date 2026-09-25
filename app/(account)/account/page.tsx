@@ -17,7 +17,7 @@ export default function UserProfilePage(){
 async function UserProfile(){
     await connection();
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('session');
+    const sessionCookie = cookieStore.get('access_token');
 
     if (!sessionCookie) {
         redirect('/login');
