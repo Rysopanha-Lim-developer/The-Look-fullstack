@@ -47,8 +47,8 @@ export default function LoginPage(){
     }
     return(
         <section className="w-full h-100% flex flex-col items-center justify-start">
-            <h1>Welcome to The Look</h1>
-            <h2>Login to your account</h2>
+            <h1>Sign in to The Look</h1>
+            <h3>The paradise for stylish people</h3>
             <article className="w-[70%] h-[90dvh] flex flex-col justify-start items-center gap-y-4">
                 <form onSubmit={handelLogin} 
                     className="w-[50%] rounded-lg border-2 px-2.5 py-5 flex flex-col gap-2.5 bg-[rgb(255,255,255)]">
@@ -132,6 +132,10 @@ export default function LoginPage(){
                         <button type="submit" className="btn px-5">
                             Login
                         </button>
+                    </div>
+                    <div>
+                        <p>Don't have account?</p>
+                        <a href="/register" className="text-s underline active:text-blue-500">Click here to sign up</a>
                     </div>
                 </form>
                 <div>

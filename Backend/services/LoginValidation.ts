@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { HttpError } from "@/Backend/lib/errors";
 import { registerANDLoginSchema } from "@/Backend/services/CreateNewUser";
 import z from "zod";
-import { signAccessToken } from "@/Backend/lib/jwt";
+import { signAccessToken, signRefreshToken } from "@/Backend/lib/jwt";
 import { HashCredential } from "@/Backend/lib/jwt";
 
 
@@ -49,10 +49,20 @@ export async function LoginValidation(body: LoginANDRegesterPayload) {
         username: userReference.username,
         email: userReference.email
     })
+    const refreshToken = await signRefreshToken({
+        sub: userReference._id!.toString()
+    })
 
     const cookie = await cookies();
 
     cookie.set('access_token', token, {
+        httpOnly: true,      // JS on the client can't read it (XSS protection)
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/', //path specify which url of the web can access this cookies if use /account only this url has access to the cookies other don't
+        maxAge: 60 * 60 * 24 * 30, // 30 days max life
+    });
+    cookie.set('refresh_token', refreshToken, {
         httpOnly: true,      // JS on the client can't read it (XSS protection)
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',

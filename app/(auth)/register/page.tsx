@@ -52,8 +52,8 @@ export default function RegisterPage(){
     }
     return(
         <section className="w-full h-100% flex flex-col items-center justify-start">
-            <h1>Welcome to The Look</h1>
-            <h2>Please register here</h2>
+            <h1>Sign up to The Look</h1>
+            <h3>The paradise for stylish people</h3>
             <article className="w-[70%] h-[90dvh] flex flex-col justify-start items-center gap-y-4">
                 <form onSubmit={handelRegister} 
                     className="w-[50%] rounded-lg border-2 px-2.5 py-5 flex flex-col gap-2.5 bg-[rgb(255,255,255)]">

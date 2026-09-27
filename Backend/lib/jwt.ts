@@ -6,6 +6,7 @@ if (!process.env.JWT_SECRET) {
 }
 const encoder = new TextEncoder();
 const JWT_SECRET = encoder.encode(process.env.JWT_SECRET)
+const REFRESH_TOKEN_SECRET = encoder.encode(process.env.REFRESH_TOKEN_SECRET)
 
 export type jwtPayload = {
     sub: string,
@@ -13,7 +14,13 @@ export type jwtPayload = {
     email: string
 }
 
-//prep refresh token
+export async function signRefreshToken(payload: {sub: string}) {
+    return new SignJWT(payload)
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime(process.env.REFRESH_TOKEN_EXPIRES_IN ?? "30d")
+        .sign(REFRESH_TOKEN_SECRET);
+}
 
 
 export async function signAccessToken(payload: jwtPayload) {
@@ -26,6 +33,10 @@ export async function signAccessToken(payload: jwtPayload) {
 
 export async function verifyAccessToken(token: string) {
     const { payload } = await jwtVerify<jwtPayload>(token, JWT_SECRET);
+    return payload;
+}
+export async function verifyRefreshToken(token: string) {
+    const { payload } = await jwtVerify<{sub: string}>(token, REFRESH_TOKEN_SECRET);
     return payload;
 }
 
