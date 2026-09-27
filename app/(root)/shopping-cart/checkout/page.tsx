@@ -5,6 +5,7 @@ import { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
 import OrderReceipt from "@/Frontend/components/product/Receipt/OrderReceipt";
 import OrderReceiptSkeleton from "@/Frontend/components/common/RecieptSkeleton/OrderReceiptSkeleton";
 import { useCart } from "@/Frontend/hooks/CartContext";
+import { HttpError } from "@/Backend/lib/errors";
 
 export default function Checkout(){
     // this state and useEffect is for getting data from local storage and sent to the api
@@ -48,7 +49,7 @@ export default function Checkout(){
             });
             const res = await req.json();
             if(!req.ok){
-                throw new Error(`Cannot create order ${req.status}`);
+                throw new HttpError(`Cannot create order ${req.status}`);
             };
 
             setApiStatus(req.status);

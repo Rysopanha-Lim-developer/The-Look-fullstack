@@ -6,6 +6,8 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { cookies } from "next/headers";
 import OrderDisplayCard from "@/Frontend/components/product/OrderDisplayCard/OrderDisplayCard";
+import { verifyAccessToken } from "@/Backend/lib/jwt";
+import { jwtPayload } from "@/Backend/lib/jwt";
 
 export default async function OrderPage(){
     return(
@@ -20,12 +22,12 @@ async function Orders(){
     await connection();
     await dbConnection();
     const cookiesSession = await cookies();
-    const cookiesString = cookiesSession.get("session");
-    if(!cookiesString){
+    const token = cookiesSession.get("access_token")!.value;
+    if(!token){
         throw new Error("Pleas login to your account before purchase.")
     };
-    const cookiesData:{username: string, email:string} = JSON.parse(cookiesString.value)
-    const user:User = await UserModel.findOne({username: cookiesData.username}).lean()
+    const payload: jwtPayload= await verifyAccessToken(token)
+    const user:User = await UserModel.findOne({username: payload.username}).lean()
 
     const res = await OrderModel.find({accountId: user._id}).lean();
     const orders:Order[] = JSON.parse(JSON.stringify(res)); 

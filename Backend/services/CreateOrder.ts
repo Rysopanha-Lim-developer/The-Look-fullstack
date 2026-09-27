@@ -4,6 +4,7 @@ import { UserModel, User } from "@/Backend/models/user.model";
 import { Product, ProductModel } from "@/Backend/models/product.model";
 import { cookies } from "next/headers";
 import { HttpError } from "@/Backend/lib/errors";
+import { jwtPayload, verifyAccessToken } from "@/Backend/lib/jwt";
 
 type CreateOrderPayload = {
     items: Product[];
@@ -23,11 +24,16 @@ export async function CreateOrder({items, userPersonalInfo}:CreateOrderPayload) 
     await dbConnection();
 
     const cookiesSession = await cookies();
-    const cookiesString = cookiesSession.get("session");
-    if(!cookiesString){
-        throw new HttpError("Please login to your account before purchase.", 401);
-    };
-    const cookiesData:{username: string, email:string} = JSON.parse(cookiesString.value)
+    const token = cookiesSession.get("access_token")!.value;
+    if(!token){
+            throw new HttpError("Pleas login to your account before purchase.", 401)
+        };
+    const payload: jwtPayload= await verifyAccessToken(token)
+    
+    const cookiesData:{username: string, email:string} = {
+        username : payload.username,
+        email : payload.email
+    }
 
     const userAccount:User = await UserModel.findOne({"username": cookiesData.username}).lean()
     if(!userAccount){
