@@ -4,7 +4,7 @@ import { UserPersonalDataForm } from "@/Frontend/components/user/UserPersonalDat
 import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { redirect } from "next/navigation"; //work the same as useRouter but for server component
-import { verifyAccessToken } from "@/Backend/lib/jwt";
+import { verifyAccessToken, verifyRefreshToken, signAccessToken } from "@/Backend/lib/jwt";
 
 export default function UserProfilePage(){
 
@@ -17,16 +17,28 @@ export default function UserProfilePage(){
 
 async function UserProfile(){
     await connection();
-    const cookieStore = await cookies();
-    const token = cookieStore.get('access_token')?.value;
+    const cookieInfo = await cookies();
+    const token = cookieInfo.get('access_token')?.value;
+    const refreshToken = cookieInfo.get('refresh_token')?.value;
 
     if (!token) {
         redirect('/login');
     }
+    //TODO: add functionality to issue new access token if refresh token is valid
+    // if(!token){
+    //     try {
+    //         const validRefreshToken = await verifyRefreshToken(refreshToken!);
+    //         if(validRefreshToken){
+
+    //         }
+    //     } catch {
+    //         redirect("/login");
+    //     }
+    // }
 
     let payload;
     try {
-        payload = await verifyAccessToken(token);
+        payload = await verifyAccessToken(token!);
     } catch {
         redirect("/login");
     }
