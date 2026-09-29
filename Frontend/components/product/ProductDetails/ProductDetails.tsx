@@ -37,37 +37,42 @@ export default function ProductDetail({props}: {props: Product}) {
     if (loading) return <ProductDetailSkeleton />;
     detail ? loading = false : <h1>Product can't be fetch</h1>;
 
-    return(
+    return (
         <section className="flex flex-col w-full h-[90dvh] items-center justify-evenly">
             <div className="flex w-full h-[80dvh] items-center justify-evenly">
                 <div>
-                    <Image src={detail.image} alt={detail.image} width={300} height={400} />
+                    <Image
+                        src={detail.image}
+                        alt={`${detail.brand} ${detail.name}`}
+                        width={300}
+                        height={400}
+                        priority
+                    />
                 </div>
                 <div>
-                    <div className="leading-5">
-                        <h1>Brand</h1>
-                        <h2>{detail.brand}</h2>
-                    </div>
-                    <div className="leading-5">
-                        <h1>Name</h1>
-                        <h2>{detail.name}</h2>
-                    </div>
-                    <div className="leading-5">
-                        <h1>Price</h1>
-                        <h2>{detail.price}</h2>
-                    </div>
-                    <div className="leading-5">
-                        <h1>Available Color </h1>
-                        <h2>{detail.color}</h2>
-                    </div>
-                    <div className="leading-5">
-                        <h1>Materials</h1>
-                        <h2>{detail.material}</h2>
-                    </div>
+                    <h1>{detail.name}</h1>
+                    <dl>
+                        <div className="leading-5">
+                            <dt className="text-2xl font-semibold">Brand</dt>
+                            <dd>{detail.brand}</dd>
+                        </div>
+                        <div className="leading-5">
+                            <dt className="text-2xl font-semibold">Price</dt>
+                            <dd>${detail.price}</dd>
+                        </div>
+                        <div className="leading-5">
+                            <dt className="text-2xl font-semibold">Available Color</dt>
+                            <dd>{detail.color}</dd>
+                        </div>
+                        <div className="leading-5">
+                            <dt className="text-2xl font-semibold">Materials</dt>
+                            <dd>{detail.material}</dd>
+                        </div>
+                    </dl>
                 </div>
             </div>
-            <div className=" flex w-full justify-center gap-5">
-                <button className="btn" onClick={()=>{addItem(detail)}}>
+            <div className="flex w-full justify-center gap-5">
+                <button className="btn" onClick={() => { addItem(detail) }}>
                     Add to cart
                 </button>
                 <button className="btn" onClick={AddItemToFavorite}>
