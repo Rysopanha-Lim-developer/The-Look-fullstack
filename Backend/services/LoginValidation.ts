@@ -60,7 +60,7 @@ export async function LoginValidation(body: LoginANDRegesterPayload) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/', //path specify which url of the web can access this cookies if use /account only this url has access to the cookies other don't
-        maxAge: 60 * 60 * 24 * 30, // 30 days max life
+        maxAge: 60 * 15 ,
     });
     cookie.set('refresh_token', refreshToken, {
         httpOnly: true,      // JS on the client can't read it (XSS protection)
