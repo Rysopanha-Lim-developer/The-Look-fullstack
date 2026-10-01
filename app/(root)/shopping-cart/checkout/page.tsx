@@ -49,10 +49,10 @@ export default function Checkout(){
             });
             const res = await req.json();
             if(!req.ok){
+                setApiStatus(req.status);
                 throw new HttpError(`Cannot create order ${req.status}`);
             };
 
-            setApiStatus(req.status);
             setCookiesData(res.cookiesData);
             setUserPersonalInfo(res.userPersonalInfo);
         } catch (error) {
@@ -75,6 +75,9 @@ export default function Checkout(){
                 )}
                 <div className="w-full flex items-center justify-end">
                     <button type="button" className="btn" onClick={SendOrder}>Place Order</button>
+                </div>
+                <div>
+                    {apiStatus == 500 || apiStatus == 400 || apiStatus == 401 ? <p>Something is wrong</p> : <p></p>}
                 </div>
             </article>
         </section>

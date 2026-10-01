@@ -5,11 +5,26 @@ import { Product, ProductModel } from "@/Backend/models/product.model";
 import { cookies } from "next/headers";
 import { HttpError } from "@/Backend/lib/errors";
 import { jwtPayload, verifyAccessToken } from "@/Backend/lib/jwt";
+import z from "zod";
 
 type CreateOrderPayload = {
     items: Product[];
     userPersonalInfo: unknown; // type this properly once you have a shape for it
 }
+
+
+
+const personalInfoSchema = z.object({
+    firstname: z.string().trim().min(1).max(50),
+    lastname: z.string().trim().min(1).max(50),
+    gender: z.string().max(10),
+    cityNprovince: z.string().trim().min(1).max(100),
+    district: z.string().trim().min(1).max(100),
+    commune: z.string().trim().min(1).max(100),
+    street: z.string().trim().min(1).max(200),
+    telephone: z.string().trim().regex(/^[0-9+\s-]{8,15}$/, "Invalid phone number"),
+    email: z.email(),
+});
 
 async function GetRealPrices(items: Product[]) {
     const ids = items.map((item) => item._id);
@@ -20,7 +35,13 @@ async function GetRealPrices(items: Product[]) {
     return priceMap;
 }
 
-export async function CreateOrder({items, userPersonalInfo}:CreateOrderPayload) {
+export async function CreateOrder({items, userPersonalInfo:rawPersonalInfo}:CreateOrderPayload) {
+    //userPersonalInfo:rawPersonalInfo this part is renaming userPersonalInfo to get a local variable for using with zod, to prevent changing userPersonalInfo at multiple place
+    const checked = personalInfoSchema.safeParse(rawPersonalInfo);
+    if(!checked.success){
+        throw new HttpError("Please complete your delivery details and cart", 400);
+    }
+    const userPersonalInfo = checked.data;
     await dbConnection();
 
     const cookiesSession = await cookies();
