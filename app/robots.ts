@@ -5,7 +5,14 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: "*",
             allow: "/",
-            disallow: ["/cart", "/checkout", "/account", "/api/"],
+            disallow: [
+                "/shopping-cart",   // also covers /shopping-cart/checkout
+                "/account",
+                "/favorite",
+                "/login",
+                "/register",
+                "/api/",
+            ],
         },
         sitemap: "https://thelook.vercel.app/sitemap.xml",
     };

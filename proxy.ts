@@ -46,5 +46,5 @@ try {
 }
 
 export const config = {
-    matcher: ["/account/:path*"],
+    matcher: ["/account/:path*", "/shopping-cart/checkout"],
 };

@@ -26,8 +26,8 @@ export async function CreateOrder({items, userPersonalInfo}:CreateOrderPayload) 
     const cookiesSession = await cookies();
     const token = cookiesSession.get("access_token")!.value;
     if(!token){
-            throw new HttpError("Pleas login to your account before purchase.", 401)
-        };
+        throw new HttpError("Pleas login to your account before purchase.", 500)
+    };
     const payload: jwtPayload= await verifyAccessToken(token)
     
     const cookiesData:{username: string, email:string} = {

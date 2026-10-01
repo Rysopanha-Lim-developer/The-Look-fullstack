@@ -5,9 +5,6 @@ import { jwtPayload, verifyAccessToken } from "@/Backend/lib/jwt";
 export async function GetCookies() {
     const cookiesSession = await cookies();
     const token = cookiesSession.get("access_token")!.value;
-    if(!token){
-            throw new HttpError("Pleas login to your account before purchase.", 401)
-        };
     const payload: jwtPayload= await verifyAccessToken(token)
     
     const cookiesData:{username: string, email:string} = {
@@ -19,9 +16,10 @@ export async function GetCookies() {
 
 export async function DeleteCookies() {
     const cookiesSession = await cookies();
-    const cookiesString = cookiesSession.delete("access_token");
-    if(!cookiesString){
-        throw new HttpError("There is no current session available.", 401)
+    const accessToken = cookiesSession.delete("access_token");
+    const refreshToken = cookiesSession.delete("refresh_token");
+    if(!accessToken){
+        throw new HttpError("There is no current session available.", 500)
     };
     return  { message: "Successfully sign out" }
 }
