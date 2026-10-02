@@ -2,7 +2,7 @@
 
 A full-stack ecommerce demo for men's, women's and kids' clothing, shoes and accessories, built with Next.js 16 to practice full-stack development.
 
-**Live demo:** https://thelook.vercel.app
+**Live demo:** https://thelook.rysopanha.com
 
 > **Demo project.** This is not a real store. Products, brands, prices and contact details are placeholders for learning purposes. No real payments are taken.
 

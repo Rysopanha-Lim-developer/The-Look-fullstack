@@ -3,7 +3,7 @@ import { ProductModel } from "@/Backend/models/product.model";
 import { dbConnection } from "@/Backend/lib/dbConnection";
 import { connection } from "next/server";
 
-const BASE_URL = "https://thelook.vercel.app";
+const BASE_URL = "https://thelook.rysopanha.com";
 
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

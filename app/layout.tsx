@@ -13,7 +13,7 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://thelook.vercel.app"),
+  metadataBase: new URL("https://thelook.rysopanha.com"),
   title: { default: "The Look | Fashion for Men, Women & Kids in Cambodia", template: "%s | The Look" },
   description: "Shop Seiko, Persol, New Balance, J.Crew and more. Clothing, shoes and accessories for men, women and kids.",
   openGraph: { type: "website", siteName: "The Look", images: ["/og.png"] },

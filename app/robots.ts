@@ -14,6 +14,6 @@ export default function robots(): MetadataRoute.Robots {
                 "/api/",
             ],
         },
-        sitemap: "https://thelook.vercel.app/sitemap.xml",
+        sitemap: "https://thelook.rysopanha.com/sitemap.xml",
     };
 }
