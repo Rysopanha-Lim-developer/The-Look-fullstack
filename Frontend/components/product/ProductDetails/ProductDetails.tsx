@@ -1,5 +1,5 @@
 "use client"
-import Image from "next/image";
+import ProductImage from "@/Frontend/components/product/ProductImage/ProductImage";
 import { useState, useEffect } from "react";
 import { useCart } from "@/Frontend/hooks/CartContext";
 import { Product } from "@/Backend/models/product.model";
@@ -40,13 +40,12 @@ export default function ProductDetail({props}: {props: Product}) {
     return (
         <section className="flex flex-col w-full h-[90dvh] items-center justify-evenly">
             <div className="flex w-full h-[80dvh] items-center justify-evenly">
-                <div>
-                    <Image
+                <div className="w-[min(90vw,28rem)]">
+                    <ProductImage
                         src={detail.image}
                         alt={`${detail.brand} ${detail.name}`}
-                        width={300}
-                        height={400}
-                        priority
+                        sizes="(max-width: 768px) 90vw, 28rem"
+                        preload
                     />
                 </div>
                 <div>

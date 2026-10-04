@@ -1,5 +1,5 @@
 import { Product } from "@/Backend/models/product.model";
-import Image from "next/image";
+import ProductImage from "@/Frontend/components/product/ProductImage/ProductImage";
 import Link from "next/link";
 
 export type DisplayCardProps = {
@@ -10,9 +10,7 @@ export default function DisplayCard({data}: DisplayCardProps){
     return(
         <article className="displayCard">
             <div className="cardWrapper">
-                <div className="cardImageWrapper">
-                    <Image src={data.image} alt={data.name} width={150} height={100} />
-                </div>
+                <ProductImage src={data.image} alt={data.name} sizes="(max-width: 768px) 70vw, 22vw" />
                 <div className="flex flex-col w-full">
                     <div className="cardText">
                         <p>{data.name}</p>

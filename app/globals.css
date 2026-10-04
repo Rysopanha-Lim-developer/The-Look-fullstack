@@ -5,6 +5,10 @@
   --background: #ffffff;
   --foreground: #121212;
 
+  /* product image box: one shared shape and panel color for every product photo */
+  --image-panel: #ECECEA;
+  --image-ratio: 1 / 1; /* change to 3 / 4 for a portrait box */
+
   /* bg color */
     --header-btn : rgb(0, 0, 0);
     --header-btn-hover : rgb(31, 29, 29);
@@ -184,12 +188,10 @@ body {
     }
   }
 
-  .cardImageWrapper {
-    @apply w-full h-max overflow-hidden;
-
-    img {
-      @apply object-contain object-center w-[90%] h-full;
-    }
+  .productImage {
+    @apply relative w-full overflow-hidden rounded-xl;
+    aspect-ratio: var(--image-ratio);
+    background-color: var(--image-panel);
   }
 
   .cardText {
