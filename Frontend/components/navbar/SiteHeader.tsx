@@ -5,9 +5,10 @@ import CartLink from "./CartLink";
 import { CATEGORIES } from "./categories";
 
 export default function SiteHeader() {
+    // h-14 sits on the header itself (border included), so the category pill row can stick at exactly top-14
     return (
-        <header className="sticky top-0 z-40 border-b border-line bg-background print:hidden">
-            <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
+        <header className="sticky top-0 z-40 h-14 border-b border-line bg-background print:hidden">
+            <div className="mx-auto flex h-full w-full max-w-5xl items-center justify-between px-4">
                 <Link href="/" aria-label="The Look, home" className="flex items-center">
                     <Image src="/assets/Logo/logo.svg" alt="The Look" width={200} height={100} className="h-9 w-auto" />
                 </Link>
