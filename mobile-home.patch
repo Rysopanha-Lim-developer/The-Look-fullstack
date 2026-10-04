@@ -1,0 +1,541 @@
+diff --git a/Frontend/components/home/CategoryTiles.tsx b/Frontend/components/home/CategoryTiles.tsx
+new file mode 100644
+index 0000000..4ae841f
+--- /dev/null
++++ b/Frontend/components/home/CategoryTiles.tsx
+@@ -0,0 +1,22 @@
++import Link from "next/link";
++import { CATEGORIES } from "@/Frontend/components/navbar/categories";
++
++export default function CategoryTiles() {
++    return (
++        <section aria-labelledby="category-title" className="mt-8 px-4">
++            <h2 id="category-title" className="m-0 mb-3 text-base font-medium">Shop by category</h2>
++            <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
++                {CATEGORIES.map(category => (
++                    <li key={category.href}>
++                        <Link
++                            href={category.href}
++                            className="flex aspect-square items-end rounded-xl bg-panel p-3 text-base font-medium transition active:scale-[0.98]"
++                        >
++                            {category.label}
++                        </Link>
++                    </li>
++                ))}
++            </ul>
++        </section>
++    );
++}
+diff --git a/Frontend/components/home/HomeProducts.tsx b/Frontend/components/home/HomeProducts.tsx
+new file mode 100644
+index 0000000..f517abc
+--- /dev/null
++++ b/Frontend/components/home/HomeProducts.tsx
+@@ -0,0 +1,57 @@
++import { GetDisplayProduct } from "@/Backend/lib/GetDisplayProduct";
++import { Product } from "@/Backend/models/product.model";
++import ProductCard from "./ProductCard";
++
++// Same rule your old home page used for "New Product"
++const isNewArrival = (product: Product) => product.slug.startsWith("men-accessories") || product.price == 100;
++
++export default async function HomeProducts() {
++    const products = await GetDisplayProduct();
++    const newArrivals = products.filter(isNewArrival);
++    const more = products.filter(product => !isNewArrival(product)).slice(0, 8);
++
++    return (
++        <>
++            {newArrivals.length > 0 && (
++                <section id="new-arrivals" aria-labelledby="new-arrivals-title" className="mt-8 scroll-mt-16">
++                    <h2 id="new-arrivals-title" className="m-0 mb-3 px-4 text-base font-medium">New arrivals</h2>
++                    {/* Phones: swipe row. Wider screens: a normal grid. */}
++                    <ul className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:overflow-visible">
++                        {newArrivals.map(product => (
++                            <li key={product._id} className="w-[42vw] max-w-48 shrink-0 snap-start md:w-auto md:max-w-none">
++                                <ProductCard product={product} sizes="(max-width: 768px) 42vw, 22vw" />
++                            </li>
++                        ))}
++                    </ul>
++                </section>
++            )}
++
++            {more.length > 0 && (
++                <section aria-labelledby="more-title" className="mt-8">
++                    <h2 id="more-title" className="m-0 mb-3 px-4 text-base font-medium">More to explore</h2>
++                    <ul className="grid grid-cols-2 gap-3 px-4 md:grid-cols-4">
++                        {more.map(product => (
++                            <li key={product._id}>
++                                <ProductCard product={product} sizes="(max-width: 768px) 46vw, 22vw" />
++                            </li>
++                        ))}
++                    </ul>
++                </section>
++            )}
++        </>
++    );
++}
++
++// Gray placeholders shown while the products load
++export function HomeProductsSkeleton() {
++    return (
++        <section aria-hidden="true" className="mt-8 px-4">
++            <div className="mb-3 h-5 w-32 rounded bg-chip" />
++            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
++                {Array.from({ length: 4 }).map((_, index) => (
++                    <div key={index} className="aspect-square rounded-xl bg-panel" />
++                ))}
++            </div>
++        </section>
++    );
++}
+diff --git a/Frontend/components/home/ProductCard.tsx b/Frontend/components/home/ProductCard.tsx
+new file mode 100644
+index 0000000..0766220
+--- /dev/null
++++ b/Frontend/components/home/ProductCard.tsx
+@@ -0,0 +1,19 @@
++import Link from "next/link";
++import ProductImage from "@/Frontend/components/product/ProductImage/ProductImage";
++import { Product } from "@/Backend/models/product.model";
++
++type ProductCardProps = {
++    product: Pick<Product, "slug" | "name" | "image" | "price">;
++    sizes: string;
++};
++
++export default function ProductCard({ product, sizes }: ProductCardProps) {
++    return (
++        <Link href={`/${product.slug}`} className="block">
++            {/* alt is empty on purpose: the product name right below already describes the link */}
++            <ProductImage src={product.image} alt="" sizes={sizes} />
++            <p className="m-0 mt-2 line-clamp-2 text-sm leading-snug">{product.name}</p>
++            {product.price != null && <p className="m-0 mt-0.5 text-sm text-muted">${product.price}</p>}
++        </Link>
++    );
++}
+diff --git a/Frontend/components/home/PromoBanner.tsx b/Frontend/components/home/PromoBanner.tsx
+new file mode 100644
+index 0000000..8413227
+--- /dev/null
++++ b/Frontend/components/home/PromoBanner.tsx
+@@ -0,0 +1,26 @@
++import Link from "next/link";
++
++type PromoBannerProps = {
++    eyebrow?: string;
++    title?: string;
++    ctaLabel?: string;
++    ctaHref?: string;
++};
++
++// Change the sale text here (or pass props from the page) instead of editing an image.
++export default function PromoBanner({
++    eyebrow = "Big sale",
++    title = "Up to 75% off",
++    ctaLabel = "Shop now",
++    ctaHref = "#new-arrivals",
++}: PromoBannerProps) {
++    return (
++        <section className="mx-4 rounded-2xl bg-foreground p-5 text-background">
++            <p className="m-0 text-sm text-background/70">{eyebrow}</p>
++            <h2 className="m-0 mt-1 text-[1.75rem] font-medium leading-tight">{title}</h2>
++            <Link href={ctaHref} className="mt-4 inline-flex h-11 items-center rounded-full bg-background px-5 text-sm font-medium text-foreground">
++                {ctaLabel}
++            </Link>
++        </section>
++    );
++}
+diff --git a/Frontend/components/home/TrustStrip.tsx b/Frontend/components/home/TrustStrip.tsx
+new file mode 100644
+index 0000000..e248c47
+--- /dev/null
++++ b/Frontend/components/home/TrustStrip.tsx
+@@ -0,0 +1,18 @@
++import { ArrowRightLeft, BanknoteArrowDown } from "lucide-react";
++
++export default function TrustStrip() {
++    return (
++        <section aria-label="Our promises" className="mt-8 px-4">
++            <ul className="grid grid-cols-2 gap-3 text-sm text-muted">
++                <li className="flex flex-col items-center gap-1 rounded-xl bg-chip p-3 text-center">
++                    <ArrowRightLeft size={20} aria-hidden="true" />
++                    Item exchange
++                </li>
++                <li className="flex flex-col items-center gap-1 rounded-xl bg-chip p-3 text-center">
++                    <BanknoteArrowDown size={20} aria-hidden="true" />
++                    Cash refund
++                </li>
++            </ul>
++        </section>
++    );
++}
+diff --git a/Frontend/components/navbar/BottomTabBar.tsx b/Frontend/components/navbar/BottomTabBar.tsx
+new file mode 100644
+index 0000000..0723f90
+--- /dev/null
++++ b/Frontend/components/navbar/BottomTabBar.tsx
+@@ -0,0 +1,36 @@
++"use client";
++import Link from "next/link";
++import { usePathname } from "next/navigation";
++import { CATEGORIES } from "./categories";
++
++const TABS = [...CATEGORIES, { label: "Account", href: "/account" }];
++
++export default function BottomTabBar() {
++    const pathname = usePathname();
++
++    return (
++        <nav
++            aria-label="Shop sections"
++            className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-background pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
++        >
++            <ul className="mx-auto flex max-w-lg">
++                {TABS.map(tab => {
++                    const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
++                    return (
++                        <li key={tab.href} className="flex-1">
++                            <Link
++                                href={tab.href}
++                                aria-current={active ? "page" : undefined}
++                                className={`flex h-14 items-center justify-center border-t-2 text-xs ${
++                                    active ? "border-foreground font-medium text-foreground" : "border-transparent text-muted"
++                                }`}
++                            >
++                                {tab.label}
++                            </Link>
++                        </li>
++                    );
++                })}
++            </ul>
++        </nav>
++    );
++}
+diff --git a/Frontend/components/navbar/CartLink.tsx b/Frontend/components/navbar/CartLink.tsx
+new file mode 100644
+index 0000000..adbf148
+--- /dev/null
++++ b/Frontend/components/navbar/CartLink.tsx
+@@ -0,0 +1,24 @@
++"use client";
++import Link from "next/link";
++import { ShoppingBag } from "lucide-react";
++import { useCart } from "@/Frontend/hooks/CartContext";
++
++export default function CartLink() {
++    const { items } = useCart();
++    const count = items.length;
++
++    return (
++        <Link
++            href="/shopping-cart"
++            aria-label={count > 0 ? `Cart, ${count} items` : "Cart"}
++            className="relative flex size-11 items-center justify-center"
++        >
++            <ShoppingBag size={22} aria-hidden="true" />
++            {count > 0 && (
++                <span className="absolute right-0.5 top-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-medium text-foreground">
++                    {count}
++                </span>
++            )}
++        </Link>
++    );
++}
+diff --git a/Frontend/components/navbar/SiteHeader.tsx b/Frontend/components/navbar/SiteHeader.tsx
+new file mode 100644
+index 0000000..8c1b14e
+--- /dev/null
++++ b/Frontend/components/navbar/SiteHeader.tsx
+@@ -0,0 +1,36 @@
++import Image from "next/image";
++import Link from "next/link";
++import { Heart, User } from "lucide-react";
++import CartLink from "./CartLink";
++import { CATEGORIES } from "./categories";
++
++export default function SiteHeader() {
++    return (
++        <header className="sticky top-0 z-40 border-b border-line bg-background print:hidden">
++            <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
++                <Link href="/" aria-label="The Look, home" className="flex items-center">
++                    <Image src="/assets/Logo/logo.svg" alt="The Look" width={200} height={100} className="h-9 w-auto" />
++                </Link>
++
++                {/* Category links only show on wider screens; phones use the bottom tab bar */}
++                <nav aria-label="Main" className="hidden md:flex md:gap-6">
++                    {CATEGORIES.map(category => (
++                        <Link key={category.href} href={category.href} className="text-base font-medium">
++                            {category.label}
++                        </Link>
++                    ))}
++                </nav>
++
++                <div className="flex items-center">
++                    <Link href="/favorite" aria-label="Favorites" className="flex size-11 items-center justify-center">
++                        <Heart size={22} aria-hidden="true" />
++                    </Link>
++                    <CartLink />
++                    <Link href="/account" aria-label="Account" className="hidden size-11 items-center justify-center md:flex">
++                        <User size={22} aria-hidden="true" />
++                    </Link>
++                </div>
++            </div>
++        </header>
++    );
++}
+diff --git a/Frontend/components/navbar/categories.ts b/Frontend/components/navbar/categories.ts
+new file mode 100644
+index 0000000..8bdd019
+--- /dev/null
++++ b/Frontend/components/navbar/categories.ts
+@@ -0,0 +1,7 @@
++// One shared list so the header, the bottom tab bar and the home tiles never drift apart.
++export const CATEGORIES = [
++    { label: "Women", href: "/women" },
++    { label: "Men", href: "/men" },
++    { label: "Girls", href: "/girls" },
++    { label: "Boys", href: "/boys" },
++] as const;
+diff --git a/app/(root)/layout.tsx b/app/(root)/layout.tsx
+index 94e573f..d6bc10e 100644
+--- a/app/(root)/layout.tsx
++++ b/app/(root)/layout.tsx
+@@ -1,69 +1,19 @@
+-import Image from "next/image"
+-import Link from "next/link"
+-import { Heart, ShoppingCart, User, ShieldLock, ArrowRightLeft, BanknoteArrowDown, Mail, Phone, Send  } from "lucide-react"
++import { Suspense } from "react";
++import { ShieldLock, ArrowRightLeft, BanknoteArrowDown, Mail, Phone, Send  } from "lucide-react"
+ import { Facebook, Tiktok, Instagram, XFormerlyTwitter  } from "@thesvg/react";
+ import { CartProvider } from "@/Frontend/hooks/CartContext";
++import SiteHeader from "@/Frontend/components/navbar/SiteHeader";
++import BottomTabBar from "@/Frontend/components/navbar/BottomTabBar";
+ 
+ 
+ export default function RootLayout({children}: {children: React.ReactNode}){
+     return(
+-        <>
+-            <header className="flex w-full print:hidden">
+-                <nav className="nav-bar">
+-                    <ul className="nav-bar-ul w-[20%]">
+-                        <li>
+-                            <Link href="/">
+-                                <Image src="/assets/Logo/logo.svg" width={200} height={100} alt="Brand logo" />
+-                            </Link>
+-                        </li>
+-                    </ul>
+-                    <ul className="nav-bar-ul w-[60%]">
+-                        <li>
+-                            <Link  href="/women" className="nav-link text-[1.5rem]">
+-                                Women
+-                            </Link>
+-                        </li>
+-                        <li>
+-                            <Link  href="/men" className="nav-link text-[1.5rem]">
+-                                Men
+-                            </Link>
+-                        </li>
+-                        <li>
+-                            <Link  href="/girls" className="nav-link text-[1.5rem]">
+-                                Girls
+-                            </Link>
+-                        </li>
+-                        <li>
+-                            <Link  href="/boys" className="nav-link text-[1.5rem]">
+-                                Boys
+-                            </Link>
+-                        </li>
+-                    </ul>
+-                    <ul className="nav-bar-ul w-[20%]">
+-                        <li>
+-                            <Link href="/favorite">
+-                                <Heart />
+-                            </Link>
+-                        </li>
+-                        <li>
+-                            <Link href="/shopping-cart">
+-                                <ShoppingCart />
+-                            </Link>
+-                        </li>
+-                        <li>
+-                            <Link href="/account">
+-                                <User />
+-                            </Link>
+-                        </li>
+-                    </ul>
+-                </nav>
+-            </header>
+-            <main>
+-                <CartProvider>
+-                    {children}
+-                </CartProvider>
++        <CartProvider>
++            <SiteHeader />
++            <main className="flex-1">
++                {children}
+             </main>
+-            <footer className="Footer print:hidden ">
++            <footer className="Footer pb-16 md:pb-0 print:hidden">
+                 <ul className="media">
+                     <li>Follow Us</li>
+                     <li ><Facebook variant="mono" width={24} height={24} /> The Look Cambodia</li>
+@@ -86,6 +36,9 @@ export default function RootLayout({children}: {children: React.ReactNode}){
+                     <li ><Send /> @theLookCambodia</li>
+                 </ul>
+         </footer>
+-        </>
++            <Suspense fallback={null}>
++                <BottomTabBar />
++            </Suspense>
++        </CartProvider>
+     )
+ }
+\ No newline at end of file
+diff --git a/app/(root)/page.tsx b/app/(root)/page.tsx
+index baac926..cff4611 100644
+--- a/app/(root)/page.tsx
++++ b/app/(root)/page.tsx
+@@ -1,61 +1,20 @@
+-import InfiniteLogoScroll from "@/Frontend/components/maketing/InfiniteLogoScroll/InfiniteLogoScroll";
+-import Image from "next/image";
+-import DisplayCard from "@/Frontend/components/product/DisplayCard/DisplayCard";
+-import LoadingBar from "@/Frontend/components/common/LoadingBar/LoadingBar";
+-
+-import { GetDisplayProduct } from "@/Backend/lib/GetDisplayProduct";
+-/*
+-`connection()` is Next.js 16's primitive (under the new `cacheComponents` model)
+-that tells Next: "this part of the tree must be rendered dynamically,
+-per-request — do NOT try to prerender/cache it as static HTML."
+-It replaces the old `export const dynamic = 'force-dynamic'` route config.
+-*/
+ import { Suspense } from "react";
++import PromoBanner from "@/Frontend/components/home/PromoBanner";
++import CategoryTiles from "@/Frontend/components/home/CategoryTiles";
++import HomeProducts, { HomeProductsSkeleton } from "@/Frontend/components/home/HomeProducts";
++import TrustStrip from "@/Frontend/components/home/TrustStrip";
+ 
+-
+-//main page body
+ export default function Home() {
+-    return (<>
+-        <div>
+-            <Image src="/assets/Banner/BigSaleBanner.jpg" alt="Sale banner" width={1200} height={100} className="w-dvw h-auto" />
++    return (
++        <div className="mx-auto w-full max-w-5xl pb-6 pt-4">
++            <h1 className="sr-only">The Look: fashion for men, women and kids in Cambodia</h1>
++            <PromoBanner />
++            <CategoryTiles />
++            {/* The Suspense boundary lets the page shell appear instantly while products stream in */}
++            <Suspense fallback={<HomeProductsSkeleton />}>
++                <HomeProducts />
++            </Suspense>
++            <TrustStrip />
+         </div>
+-        <InfiniteLogoScroll />
+-
+-        <Suspense fallback={<LoadingBar />}>
+-            <Products />
+-        </Suspense>
+-        {/* <Suspense> is the boundary that tells Next.js:
+-            "Everything inside here is allowed to be dynamic/slow.
+-            Show `fallback` immediately as part of the static shell,
+-            then stream in the real content once it's ready."
+-            Without this boundary, Next has nowhere to "cut" the tree,
+-            so the dynamic data access inside <Products /> would force
+-            the ENTIRE page to block on every request (the error you hit). */}
+-    </>);
++    );
+ }
+-
+-//Make db connection and query here instead
+-export async function Products() {
+-    const products = await GetDisplayProduct()
+-
+-    //filter to get specific data
+-    const filteredData = products.filter(product =>{
+-        const displayProducts = product.slug.startsWith("men-accessories") || product.price == 100;
+-        return displayProducts
+-    });
+-
+-    return (
+-        <>
+-            <h1>New Product</h1>
+-            <section className="allProductsSubSection">
+-                <div className="w-full h-auto flex gap-5 mt-o mb-0 ml-2.5 mr-2.5">
+-                    {filteredData.map((eachProduct:any) => {
+-                        return(
+-                            <DisplayCard key={eachProduct._id} data={eachProduct} />
+-                        )
+-                    })}
+-                </div>
+-            </section>
+-        </>
+-    )
+-}
+\ No newline at end of file
+diff --git a/app/globals.css b/app/globals.css
+index a413c81..49e39b9 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -2,8 +2,12 @@
+ 
+ 
+ :root {
+-  --background: #ffffff;
+-  --foreground: #121212;
++  --background: #FAFAF8;
++  --foreground: #171717;
++  --ink-muted: #5E5B55;
++  --line: #E2DFD8;
++  --chip: #EFEDE8;
++  --accent: #FF7A1A; /* small fills only (badges); never for text */
+ 
+   /* product image box: one shared shape and panel color for every product photo */
+   --image-panel: #ECECEA;
+@@ -28,6 +32,11 @@ body {
+ @theme inline {
+   --color-background: var(--background);
+   --color-foreground: var(--foreground);
++  --color-muted: var(--ink-muted);
++  --color-line: var(--line);
++  --color-chip: var(--chip);
++  --color-panel: var(--image-panel);
++  --color-accent: var(--accent);
+   --font-roboto: var(--font-roboto);
+   --font-roboto-mono: var(--font-roboto-mono);
+ }
+@@ -97,7 +106,8 @@ body {
+     }
+   }
+   .Footer {
+-    @apply bg-black text-white flex items-start justify-center p-2.5 mt-5;
++    /* stacked on phones, three columns from md up */
++    @apply bg-black text-white flex flex-col items-start gap-y-4 p-5 mt-5 md:flex-row md:justify-center md:p-2.5;
+     column-gap: 10rem;
+   }
+   .media {
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 325f897..d71418e 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -1,4 +1,4 @@
+-import type { Metadata } from "next";
++import type { Metadata, Viewport } from "next";
+ import { Roboto, Roboto_Mono } from "next/font/google";
+ import "./globals.css";
+ 
+@@ -19,6 +19,13 @@ export const metadata: Metadata = {
+   openGraph: { type: "website", siteName: "The Look", images: ["/og.png"] },
+ };
+ 
++// viewportFit: "cover" lets the bottom tab bar respect the iPhone home-indicator area
++export const viewport: Viewport = {
++  width: "device-width",
++  initialScale: 1,
++  viewportFit: "cover",
++};
++
+ export default function RootLayout({ children }: LayoutProps<"/">) {
+   return (
+     <html
