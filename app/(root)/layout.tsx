@@ -1,19 +1,69 @@
-import { Suspense } from "react";
-import { ShieldLock, ArrowRightLeft, BanknoteArrowDown, Mail, Phone, Send  } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { Heart, ShoppingCart, User, ShieldLock, ArrowRightLeft, BanknoteArrowDown, Mail, Phone, Send  } from "lucide-react"
 import { Facebook, Tiktok, Instagram, XFormerlyTwitter  } from "@thesvg/react";
 import { CartProvider } from "@/Frontend/hooks/CartContext";
-import SiteHeader from "@/Frontend/components/navbar/SiteHeader";
-import BottomTabBar from "@/Frontend/components/navbar/BottomTabBar";
 
 
 export default function RootLayout({children}: {children: React.ReactNode}){
     return(
-        <CartProvider>
-            <SiteHeader />
-            <main className="flex-1">
-                {children}
+        <>
+            <header className="flex w-full print:hidden">
+                <nav className="nav-bar">
+                    <ul className="nav-bar-ul w-[20%]">
+                        <li>
+                            <Link href="/">
+                                <Image src="/assets/Logo/logo.svg" width={200} height={100} alt="Brand logo" />
+                            </Link>
+                        </li>
+                    </ul>
+                    <ul className="nav-bar-ul w-[60%]">
+                        <li>
+                            <Link  href="/women" className="nav-link text-[1.5rem]">
+                                Women
+                            </Link>
+                        </li>
+                        <li>
+                            <Link  href="/men" className="nav-link text-[1.5rem]">
+                                Men
+                            </Link>
+                        </li>
+                        <li>
+                            <Link  href="/girls" className="nav-link text-[1.5rem]">
+                                Girls
+                            </Link>
+                        </li>
+                        <li>
+                            <Link  href="/boys" className="nav-link text-[1.5rem]">
+                                Boys
+                            </Link>
+                        </li>
+                    </ul>
+                    <ul className="nav-bar-ul w-[20%]">
+                        <li>
+                            <Link href="/favorite">
+                                <Heart />
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/shopping-cart">
+                                <ShoppingCart />
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/account">
+                                <User />
+                            </Link>
+                        </li>
+                    </ul>
+                </nav>
+            </header>
+            <main>
+                <CartProvider>
+                    {children}
+                </CartProvider>
             </main>
-            <footer className="Footer pb-16 md:pb-0 print:hidden">
+            <footer className="Footer print:hidden ">
                 <ul className="media">
                     <li>Follow Us</li>
                     <li ><Facebook variant="mono" width={24} height={24} /> The Look Cambodia</li>
@@ -36,9 +86,6 @@ export default function RootLayout({children}: {children: React.ReactNode}){
                     <li ><Send /> @theLookCambodia</li>
                 </ul>
         </footer>
-            <Suspense fallback={null}>
-                <BottomTabBar />
-            </Suspense>
-        </CartProvider>
+        </>
     )
 }

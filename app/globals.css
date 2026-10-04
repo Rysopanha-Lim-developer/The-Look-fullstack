@@ -2,12 +2,8 @@
 
 
 :root {
-  --background: #FAFAF8;
-  --foreground: #171717;
-  --ink-muted: #5E5B55;
-  --line: #E2DFD8;
-  --chip: #EFEDE8;
-  --accent: #FF7A1A; /* small fills only (badges); never for text */
+  --background: #ffffff;
+  --foreground: #121212;
 
   /* product image box: one shared shape and panel color for every product photo */
   --image-panel: #ECECEA;
@@ -32,11 +28,6 @@ body {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-muted: var(--ink-muted);
-  --color-line: var(--line);
-  --color-chip: var(--chip);
-  --color-panel: var(--image-panel);
-  --color-accent: var(--accent);
   --font-roboto: var(--font-roboto);
   --font-roboto-mono: var(--font-roboto-mono);
 }
@@ -106,8 +97,7 @@ body {
     }
   }
   .Footer {
-    /* stacked on phones, three columns from md up */
-    @apply bg-black text-white flex flex-col items-start gap-y-4 p-5 mt-5 md:flex-row md:justify-center md:p-2.5;
+    @apply bg-black text-white flex items-start justify-center p-2.5 mt-5;
     column-gap: 10rem;
   }
   .media {
