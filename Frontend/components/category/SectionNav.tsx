@@ -45,7 +45,7 @@ export default function SectionNav({ sections }: SectionNavProps) {
         <nav aria-label="Sections" className="sticky top-14 z-30 border-b border-line bg-background">
             <ul
                 ref={rowRef}
-                className="relative flex overflow-x-auto px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                className="relative flex overflow-x-auto px-3 scrollbar-none [&::-webkit-scrollbar]:hidden"
             >
                 {sections.map(section => {
                     const isActive = active === section.id;

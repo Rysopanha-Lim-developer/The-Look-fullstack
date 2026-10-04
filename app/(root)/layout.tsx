@@ -13,7 +13,8 @@ export default function RootLayout({children}: {children: React.ReactNode}){
             <main className="flex-1">
                 {children}
             </main>
-            <footer className="Footer pb-16 md:pb-0 print:hidden">
+            {/* bottom padding clears the fixed bars on phones: tab bar 56px, or the product page action bar ~72px, plus the iPhone safe area */}
+            <footer className="Footer pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0 print:hidden">
                 <ul className="media">
                     <li>Follow Us</li>
                     <li ><Facebook variant="mono" width={24} height={24} /> The Look Cambodia</li>

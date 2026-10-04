@@ -52,7 +52,7 @@ function CategorySkeleton({ config }: { config: CategoryConfig }) {
             <div className="px-4 pb-3 pt-4">
                 <p className="m-0 text-[1.75rem] font-medium leading-tight">{config.title}</p>
             </div>
-            <div className="flex gap-2 overflow-hidden border-b border-line px-4 py-[6px]">
+            <div className="flex gap-2 overflow-hidden border-b border-line px-4 py-1.5">
                 {config.sections.map(section => (
                     <span key={section.id} className="h-8 w-20 shrink-0 rounded-full bg-chip" />
                 ))}

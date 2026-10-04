@@ -16,7 +16,7 @@ export default async function HomeProducts() {
                 <section id="new-arrivals" aria-labelledby="new-arrivals-title" className="mt-8 scroll-mt-16">
                     <h2 id="new-arrivals-title" className="m-0 mb-3 px-4 text-base font-medium">New arrivals</h2>
                     {/* Phones: swipe row. Wider screens: a normal grid. */}
-                    <ul className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:overflow-visible">
+                    <ul className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:overflow-visible">
                         {newArrivals.map(product => (
                             <li key={product._id} className="w-[42vw] max-w-48 shrink-0 snap-start md:w-auto md:max-w-none">
                                 <ProductCard product={product} sizes="(max-width: 768px) 42vw, 22vw" />
