@@ -60,3 +60,4 @@ mobile-cart-favorites.patch
 mobile-checkout-profile.patch
 cleanup-old-card-and-receipt.patch
 mobile-auth-orders-notice.patch
+fix-account-redirect.patch

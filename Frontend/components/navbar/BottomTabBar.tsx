@@ -20,6 +20,7 @@ export default function BottomTabBar() {
                         <li key={tab.href} className="flex-1">
                             <Link
                                 href={tab.href}
+                                prefetch={tab.href === "/account" ? false : undefined}
                                 aria-current={active ? "page" : undefined}
                                 className={`flex h-14 items-center justify-center border-t-2 text-xs ${
                                     active ? "border-foreground font-medium text-foreground" : "border-transparent text-muted"

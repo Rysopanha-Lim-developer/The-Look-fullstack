@@ -27,7 +27,7 @@ export default function SiteHeader() {
                         <Heart size={22} aria-hidden="true" />
                     </Link>
                     <CartLink />
-                    <Link href="/account" aria-label="Account" className="hidden size-11 items-center justify-center md:flex">
+                    <Link href="/account" prefetch={false} aria-label="Account" className="hidden size-11 items-center justify-center md:flex">
                         <User size={22} aria-hidden="true" />
                     </Link>
                 </div>

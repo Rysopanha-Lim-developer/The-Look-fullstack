@@ -52,8 +52,9 @@ export default function LoginForm() {
                 body: JSON.stringify({ username: username.trim(), email: email.trim(), password }),
             });
             if (res.ok) {
-                router.refresh();
+                // Go first, then refresh: this clears the client's cached /account redirect from before login
                 router.push(next ?? "/");
+                router.refresh();
                 return;
             }
             // Only the status code is used. The server's own message is never shown.
