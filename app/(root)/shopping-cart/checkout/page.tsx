@@ -18,6 +18,9 @@ const editDetailsHref = `${PROFILE_PATH}?next=${next}`;
 // ?reason=checkout makes the profile page show the "add your details first" popup
 const fillDetailsHref = `${PROFILE_PATH}?reason=checkout&next=${next}`;
 
+// the login page sends people back to checkout after they sign in
+const signInHref = `/login?next=${next}`;
+
 const primaryLink = "mt-6 flex h-12 items-center rounded-full bg-foreground px-8 text-sm font-medium text-background";
 
 export default function Checkout(){
@@ -131,7 +134,7 @@ export default function Checkout(){
                 </p>
                 {session === "error"
                     ? <button type="button" onClick={() => window.location.reload()} className={primaryLink}>Try again</button>
-                    : <Link href="/login" className={primaryLink}>Sign in</Link>}
+                    : <Link href={signInHref} className={primaryLink}>Sign in</Link>}
             </div>
         );
     }
@@ -190,7 +193,7 @@ export default function Checkout(){
                     <>Some of your details were not accepted. <Link href={editDetailsHref} className="underline">Check them here</Link>.</>
                 )}
                 {orderError === "signed-out" && (
-                    <>Your session has expired. <Link href="/login" className="underline">Sign in again</Link>.</>
+                    <>Your session has expired. <Link href={signInHref} className="underline">Sign in again</Link>.</>
                 )}
                 {orderError === "other" && "Something went wrong and your order was not placed. Please try again."}
             </div>

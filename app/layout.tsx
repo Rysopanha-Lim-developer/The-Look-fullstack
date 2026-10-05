@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/Frontend/hooks/CartContext";
+import DemoNotice from "@/Frontend/components/notice/DemoNotice";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       {/* CartProvider lives here (not in a route-group layout) so the cart survives moving between shop, account and login pages */}
       <body className="min-h-full flex flex-col">
         <CartProvider>{children}</CartProvider>
+        <DemoNotice />
       </body>
     </html>
   );

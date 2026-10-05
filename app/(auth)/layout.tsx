@@ -1,39 +1,22 @@
-import { ShieldLock, ArrowRightLeft, BanknoteArrowDown, Mail, Phone, Send  } from "lucide-react"
-import { Facebook, Tiktok, Instagram, XFormerlyTwitter  } from "@thesvg/react";
+import Image from "next/image";
+import Link from "next/link";
+import SiteFooter from "@/Frontend/components/layout/SiteFooter";
 
-
-export default function RootLayout({children}: {children: React.ReactNode}){
+// Sign-in pages stay simple: just the logo, the form, and the footer
+export default function AuthLayout({children}: {children: React.ReactNode}){
     return(
         <>
-            <header>
-                
+            <header className="flex justify-center px-4 pt-6">
+                <Link href="/" aria-label="The Look, home">
+                    <Image src="/assets/Logo/logo.svg" alt="The Look" width={200} height={100} className="h-10 w-auto" />
+                </Link>
             </header>
-            <main className="bg-[rgba(143,137,137,0.56)] backdrop-blur-sm">
-                {children}
+            <main className="flex-1">
+                <div className="mx-auto w-full max-w-sm px-4 pb-10 pt-6">
+                    {children}
+                </div>
             </main>
-            <footer className="Footer m-0">
-                <ul className="media">
-                    <li>Follow Us</li>
-                    <li ><Facebook variant="mono" width={24} height={24} /> The Look Cambodia</li>
-                    <li ><Tiktok variant="mono" width={24} height={24} /> @theLookCambodia</li>
-                    <li ><Instagram variant="mono" width={24} height={24} /> @theLookCambodia</li>
-                    <li ><XFormerlyTwitter width={24} height={24} /> @theLookCambodia</li>
-                </ul>
-                <ul className="media">
-                    <li>Customer services</li>
-                    <li >
-                        <ShieldLock /> 
-                        Privacy Policy</li>
-                    <li ><ArrowRightLeft /> Item Exchange</li>
-                    <li ><BanknoteArrowDown /> Cash Refund</li>
-                </ul>
-                <ul className="media">
-                    <li>Contact Us</li>
-                    <li ><Mail /> tLook@gmail.com</li>
-                    <li ><Phone /> (+855) 23 888 999</li>
-                    <li ><Send /> @theLookCambodia</li>
-                </ul>
-        </footer>
+            <SiteFooter />
         </>
     )
 }
