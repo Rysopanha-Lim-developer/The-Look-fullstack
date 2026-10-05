@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import LoadingBar from "@/Frontend/components/common/LoadingBar/LoadingBar";
 import { UserPersonalDataForm } from "@/Frontend/components/user/UserPersonalDataForm/UserPersonalDataForm";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { verifyAccessToken, jwtPayload } from "@/Backend/lib/jwt";
 
 export default function UserProfilePage(){
@@ -16,17 +17,28 @@ export default function UserProfilePage(){
 async function UserProfile(){
     const session = await cookies();
     const token = session.get("access_token")?.value;
-    const payload: jwtPayload = await verifyAccessToken(token!);
+
+    // Not signed in (or the session has expired): go to the login page instead of showing an error
+    let payload: jwtPayload | null = null;
+    if (token) {
+        try {
+            payload = await verifyAccessToken(token);
+        } catch {
+            payload = null;
+        }
+    }
+    if (!payload) redirect("/login");
 
     return(
         <>
-            <article className="flex flex-col w-full">
-                <h2 className="my-0 underline">Welcome back {payload.username}</h2>
-                <h3 className="my-0">Email: {payload.email}</h3>
-            </article>
-            <article className="flex flex-col w-full pt-2.5">
+            <h1 className="m-0 text-[1.75rem] font-medium leading-tight">Hi, {payload.username}</h1>
+            <p className="m-0 mt-0.5 text-sm text-muted">{payload.email}</p>
+
+            <h2 className="m-0 mb-4 mt-6 text-base font-medium">Delivery details</h2>
+            {/* useSearchParams (inside the form) needs its own Suspense boundary */}
+            <Suspense fallback={null}>
                 <UserPersonalDataForm />
-            </article>
+            </Suspense>
         </>
     )
 }

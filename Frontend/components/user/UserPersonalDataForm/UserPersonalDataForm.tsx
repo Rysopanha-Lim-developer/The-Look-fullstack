@@ -1,128 +1,184 @@
 "use client"
+import { useEffect, useRef, useState } from "react";
+import type { SubmitEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
+import ActionBar from "@/Frontend/components/common/ActionBar/ActionBar";
+import FormField from "@/Frontend/components/common/FormField";
+import { usePersonalInfo } from "@/Frontend/hooks/usePersonalInfo";
+import {
+    FIELD_ORDER,
+    getPersonalInfoErrors,
+    safeNextPath,
+    type PersonalInfoField,
+} from "@/Frontend/lib/personalInfo";
 
-import { useState } from "react";
-import { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
+const GENDERS = [
+    { value: "male", label: "Male" },
+    { value: "female", label: "Female" },
+    { value: "none", label: "Prefer not to say" },
+];
 
+// Wait until the browser has read the saved details, so the form starts with them filled in
+export function UserPersonalDataForm() {
+    const { info, ready, isComplete, save } = usePersonalInfo();
 
-export function UserPersonalDataForm(){
-    let [firstname, setFirstname] = useState("");
-    let [lastname, setLastname] = useState("");
-    let [gender, setGender] = useState("");
-    let [cityNprovince, setCityNprovince] = useState("");
-    let [district, setDistrict] = useState("");
-    let [commune, setCommune] = useState("");
-    let [street, setStreet] = useState("");
-    let [telephone, setTelephone] = useState("");
-    let [email, setEmail] = useState("");
+    if (!ready) {
+        return <div aria-hidden="true" className="h-96 animate-pulse rounded-xl bg-chip" />;
+    }
+    return <ProfileFields saved={info} savedIsComplete={isComplete} save={save} />;
+}
 
-    function handleFirstname(e:any){
-        setFirstname(e.target.value);
-    }
-    function handleLastname(e:any){
-        setLastname(e.target.value);
-    }
-    function handleGender(e:any){
-        setGender(e.target.value);
-    }
-    function handleCityNProvince(e:any){
-        setCityNprovince(e.target.value);
-    }
-    function handleDistrict(e:any){
-        setDistrict(e.target.value);
-    }
-    function handleCommune(e:any){
-        setCommune(e.target.value);
-    }
-    function handleStreet(e:any){
-        setStreet(e.target.value);
-    }
-    function handleTelephone(e:any){
-        setTelephone(e.target.value);
-    }
-    function handleEmail(e:any){
-        setEmail(e.target.value);
-    }
+type ProfileFieldsProps = {
+    saved: UserPersonalInfo;
+    savedIsComplete: boolean;
+    save: (info: UserPersonalInfo) => boolean;
+};
 
-    function StoreUserPersonalData(e:React.SubmitEvent<HTMLFormElement>){
-        e.preventDefault();
-        const personalData:UserPersonalInfo = {
-            firstname,
-            lastname,
-            gender,
-            cityNprovince, 
-            district,
-            commune,
-            street,
-            telephone,
-            email
+function ProfileFields({ saved, savedIsComplete, save }: ProfileFieldsProps) {
+    const router = useRouter();
+    const params = useSearchParams();
+    const next = safeNextPath(params.get("next"));
+    // Checkout sends people here with ?reason=checkout when their details are missing
+    const showNotice = params.get("reason") === "checkout" && !savedIsComplete;
+
+    const [draft, setDraft] = useState<UserPersonalInfo>(saved);
+    const [touched, setTouched] = useState<Partial<Record<PersonalInfoField, boolean>>>({});
+    const [submitted, setSubmitted] = useState(false);
+    const [status, setStatus] = useState<"idle" | "saved" | "failed">("idle");
+    const dialogRef = useRef<HTMLDialogElement>(null);
+
+    const errors = getPersonalInfoErrors(draft);
+    const errorFor = (field: PersonalInfoField) => (submitted || touched[field] ? errors[field] : undefined);
+
+    useEffect(() => {
+        const dialog = dialogRef.current;
+        if (showNotice && dialog && !dialog.open) dialog.showModal();
+    }, [showNotice]);
+
+    const focusFirstProblem = () => {
+        const first = FIELD_ORDER.find(field => errors[field]);
+        if (first) document.getElementById(`field-${first}`)?.focus();
+    };
+
+    const change = (field: PersonalInfoField, value: string) => {
+        setDraft(current => ({ ...current, [field]: value }));
+        setStatus("idle");
+    };
+
+    const closeNotice = () => {
+        dialogRef.current?.close();
+        focusFirstProblem();
+    };
+
+    const onSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setSubmitted(true);
+        if (Object.keys(errors).length > 0) {
+            focusFirstProblem();
+            return;
         }
-        
-        localStorage.setItem("personal-data", JSON.stringify(personalData))
-    }
-    return(<>
-        <h3 className="underline">Personal Information</h3>
-        <form className="flex flex-col w-full ml-2 gap-y-2.5" onSubmit={StoreUserPersonalData}>
-            <div className="flex w-full items-center justify-evenly">
-                <div className="flex flex-col w-[50%]">
-                    <label htmlFor="firstname">First Name</label>
-                    <input type="text" name="firstname" className="w-[90%] rounded-lg" value={firstname} onChange={handleFirstname} />
+        // trim stray spaces before saving
+        const cleaned = Object.fromEntries(FIELD_ORDER.map(field => [field, draft[field].trim()])) as UserPersonalInfo;
+        if (!save(cleaned)) {
+            setStatus("failed");
+            return;
+        }
+        if (next) router.push(next); // came from checkout: send them straight back
+        else setStatus("saved");
+    };
+
+    const text = (field: PersonalInfoField, label: string, extra: object = {}) => (
+        <FormField
+            id={`field-${field}`}
+            label={label}
+            value={draft[field]}
+            onChange={event => change(field, event.target.value)}
+            onBlur={() => setTouched(current => ({ ...current, [field]: true }))}
+            error={errorFor(field)}
+            maxLength={200}
+            {...extra}
+        />
+    );
+
+    return (
+        <>
+            {showNotice && (
+                <dialog
+                    ref={dialogRef}
+                    aria-labelledby="details-notice-title"
+                    className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl bg-background p-5 text-foreground backdrop:bg-black/40"
+                >
+                    <h2 id="details-notice-title" className="m-0 text-lg font-medium">Add your details first</h2>
+                    <p className="m-0 mt-2 text-sm text-muted">
+                        We need your name, phone number and delivery address before you can place an order.
+                        Fill in the form and we will take you back to checkout.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={closeNotice}
+                        className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-foreground text-sm font-medium text-background"
+                    >
+                        Fill in my details
+                    </button>
+                </dialog>
+            )}
+
+            <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
+                <div className="grid grid-cols-2 gap-3">
+                    {text("firstname", "First name", { autoComplete: "given-name" })}
+                    {text("lastname", "Last name", { autoComplete: "family-name" })}
                 </div>
-                <div className="flex flex-col w-[50%]">
-                    <label htmlFor="lastname">Last Name</label>
-                    <input type="text" name="lastname" className="w-[90%] rounded-lg" value={lastname} onChange={handleLastname} />
-                </div>
-            </div>
-            <div className="flex w-full flex-col gap-y-2">
-                <label>Gender</label>
-                <div className="flex gap-x-1.5">
-                    <div>
-                        <input type="radio" id="gender-male" name="gender" value="male" checked={gender === "male"} onChange={handleGender} />
-                        <label htmlFor="gender-male">Male</label>
+
+                <fieldset className="m-0 border-0 p-0">
+                    <legend className="mb-1 p-0 text-sm text-muted">Gender</legend>
+                    <div className="grid grid-cols-3 gap-2">
+                        {GENDERS.map((gender, index) => (
+                            <label
+                                key={gender.value}
+                                className={`flex min-h-12 cursor-pointer items-center justify-center rounded-lg border px-2 text-center text-sm focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-foreground ${
+                                    draft.gender === gender.value ? "border-foreground bg-foreground text-background" : "border-field bg-white"
+                                }`}
+                            >
+                                <input
+                                    id={index === 0 ? "field-gender" : undefined}
+                                    type="radio"
+                                    name="gender"
+                                    value={gender.value}
+                                    checked={draft.gender === gender.value}
+                                    onChange={() => change("gender", gender.value)}
+                                    className="sr-only"
+                                />
+                                {gender.label}
+                            </label>
+                        ))}
                     </div>
-                    <div>
-                        <input type="radio" id="gender-female" name="gender" value="female" checked={gender === "female"} onChange={handleGender} />
-                        <label htmlFor="gender-female">Female</label>
-                    </div>
-                    <div>
-                        <input type="radio" id="gender-notsay" name="gender" value="none" checked={gender === "none"} onChange={handleGender} />
-                        <label htmlFor="gender-notsay">Prefer not to say</label>
-                    </div>
+                    {errorFor("gender") && <p className="m-0 mt-1 text-sm text-danger">{errorFor("gender")}</p>}
+                </fieldset>
+
+                {text("cityNprovince", "City / Province", { autoComplete: "address-level1" })}
+                <div className="grid grid-cols-2 gap-3">
+                    {text("district", "District", { autoComplete: "address-level2" })}
+                    {text("commune", "Commune")}
                 </div>
-            </div>
-            <div className="flex w-full items-center justify-evenly">
-                <div className="flex flex-col w-[50%]">
-                    <label htmlFor="city-province">City/Province(Cambodia)</label>
-                    <input type="text" name="city-province" className="w-[90%] rounded-lg" value={cityNprovince} onChange={handleCityNProvince} />
-                </div>
-                <div className="flex flex-col w-[50%]">
-                    <label htmlFor="district">District</label>
-                    <input type="text" name="district" className="w-[90%] rounded-lg" value={district} onChange={handleDistrict} />
-                </div>
-            </div>
-            <div className="flex w-full items-center justify-evenly">
-                
-                <div className="flex flex-col w-[50%]">
-                    <label htmlFor="commune">Communce</label>
-                    <input type="text" name="commune" className="w-[90%] rounded-lg" value={commune} onChange={handleCommune} />
-                </div>
-                <div className="flex flex-col w-[50%]">
-                    <label htmlFor="street">Street</label>
-                    <input type="text" name="street" className="w-[90%] rounded-lg" value={street}  onChange={handleStreet}/>
-                </div>
-            </div>
-            <div className="flex w-full items-center justify-evenly">
-                <div className="flex flex-col w-[50%]">
-                    <label htmlFor="telephone">Tel</label>
-                    <input type="tel" name="telephone" className="w-[90%] rounded-lg" value={telephone} onChange={handleTelephone} />
-                </div>
-                <div className="flex flex-col w-[50%]">
-                    <label htmlFor="email">Email</label>
-                    <input type="email" name="email" className="w-[90%] rounded-lg" value={email} onChange={handleEmail} />
-                </div>
-            </div>
-            <button className="btn w-[20%]" type="submit">
-                Save
-            </button>
-        </form>
-    </>)
+                {text("street", "Street", { autoComplete: "street-address" })}
+                {text("telephone", "Phone", { type: "tel", inputMode: "tel", autoComplete: "tel", maxLength: 15 })}
+                {text("email", "Email", { type: "email", inputMode: "email", autoComplete: "email" })}
+
+                <p role="status" className="m-0 min-h-5 text-sm">
+                    {status === "saved" && "Details saved."}
+                    {status === "failed" && <span className="text-danger">Could not save on this device. Check your browser storage settings.</span>}
+                </p>
+
+                <ActionBar>
+                    <button
+                        type="submit"
+                        className="flex h-12 w-full items-center justify-center rounded-full bg-foreground text-sm font-medium text-background"
+                    >
+                        Save details
+                    </button>
+                </ActionBar>
+            </form>
+        </>
+    );
 }

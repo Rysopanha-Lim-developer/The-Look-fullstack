@@ -26,7 +26,9 @@ function subscribe(onChange: () => void) {
 function parse(raw: string): Product[] {
     try {
         const value = JSON.parse(raw);
-        return Array.isArray(value) ? value : [];
+        if (!Array.isArray(value)) return [];
+        // drop duplicates left behind by the old button, which saved a copy on every tap
+        return value.filter((item, index, all) => index === all.findIndex(other => other._id === item._id));
     } catch {
         return []; // handles old broken values like the text "undefined"
     }
@@ -36,6 +38,13 @@ export function useFavorites() {
     // The server has no localStorage, so it renders with "[]" and the browser swaps in the real value after hydration
     const raw = useSyncExternalStore(subscribe, readRaw, () => "[]");
     const items = useMemo(() => parse(raw), [raw]);
+
+    // false while the server renders and during hydration, true afterwards; lets pages avoid flashing an empty state
+    const ready = useSyncExternalStore(
+        () => () => {},
+        () => true,
+        () => false,
+    );
 
     const isFavorite = useCallback((id: string) => items.some(item => item._id === id), [items]);
 
@@ -55,5 +64,5 @@ export function useFavorites() {
         [items],
     );
 
-    return { isFavorite, toggle };
+    return { items, ready, isFavorite, toggle };
 }

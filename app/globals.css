@@ -8,6 +8,8 @@
   --line: #E2DFD8;
   --chip: #EFEDE8;
   --accent: #FF7A1A; /* small fills only (badges); never for text */
+  --danger: #B3261E; /* errors and destructive actions */
+  --field: #8F8B82; /* form input borders */
 
   /* product image box: one shared shape and panel color for every product photo */
   --image-panel: #ECECEA;
@@ -37,6 +39,8 @@ body {
   --color-chip: var(--chip);
   --color-panel: var(--image-panel);
   --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-field: var(--field);
   --font-roboto: var(--font-roboto);
   --font-roboto-mono: var(--font-roboto-mono);
 }
@@ -125,105 +129,10 @@ body {
       }
     }
   }
-  .allProductsSubSection {
-    @apply w-full overflow-x-auto scroll-smooth flex flex-col px-7.5 py-1.25 my-5 mx-auto gap-x-5;
-    scroll-snap-type: x mandatory;
-    scroll-marker-group: after;
-  }
-
-  .allProductsSubSection::scroll-marker-group {
-    @apply flex justify-center gap-2;
-  }
-
-  .allProductsSubSection::-webkit-scrollbar {
-    @apply hidden;
-  }
-
-  .allProductsSubSection::scroll-button(right),
-  .allProductsSubSection::scroll-button(left) {
-    @apply text-black h-15 w-15 rounded-full outline-none border-none fixed bg-white/80 backdrop-blur-md cursor-pointer -translate-x-1/2;
-    content: "➔";
-    position-area: right center;
-  }
-
-  .allProductsSubSection::scroll-button(left) {
-    content: "➔";
-    position-area: left center;
-    @apply translate-x-1/2 rotate-180;
-  }
-
-  .allProductsSubSection::scroll-button(right):disabled,
-  .allProductsSubSection::scroll-button(left):disabled {
-    @apply opacity-50 cursor-default;
-  }
-
-  .displayCard {
-    @apply border border-black rounded-lg flex justify-start items-center;
-    scroll-snap-align: start;
-    flex: 0 0 22%;
-    height: 80dvh;
-
-    a {
-      @apply w-full text-center;
-    }
-  }
-
-  .displayCard::scroll-marker {
-    @apply h-[0.8em] w-[0.8em] rounded-full bg-gray-500/80;
-    content: '';
-  }
-
-  .displayCard::scroll-marker:target-current {
-    @apply bg-gray-500;
-  }
-
-  .cardWrapper {
-    @apply flex flex-col gap-y-2.5 text-center items-center justify-between w-full h-full px-3.75 py-2.5;
-
-    button {
-      @apply cursor-pointer px-1.5 py-1.25 font-semibold outline-none border-2 rounded-md ;
-      font-family: var(--font-roboto);
-      background-color: var(--header-btn);
-      color: rgb(255, 255, 255);
-
-      a {
-        @apply no-underline ;
-      }
-      &:hover {
-        background-color: var(--header-btn-hover);
-      }
-      &:active {
-        background-color: var(--header-btn-active);
-      }
-    }
-  }
-
   .productImage {
     @apply relative w-full overflow-hidden rounded-xl;
     aspect-ratio: var(--image-ratio);
     background-color: var(--image-panel);
-  }
-
-  .cardText {
-    @apply w-full;
-
-    span, p {
-      @apply font-bold text-xl;
-      font-family: var(--font-roboto);
-    }
-
-    .discountedPrice {
-      @apply block text-red-600;
-    }
-
-    .originalPrice {
-      span {
-        @apply block line-through text-gray-400;
-      }
-      p {
-        @apply text-base;
-      }
-    }
   }
 
   .btn {

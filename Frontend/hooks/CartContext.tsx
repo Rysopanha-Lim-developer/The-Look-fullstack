@@ -6,6 +6,7 @@ export type  CartContextType = {
     items: Product[];
     addItem: (item: Product) => void;
     removeItem: (productId: string) => void;
+    clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -26,8 +27,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems(prev => prev.filter(i => i.slug !== slug));
     };
 
+    // used after an order is placed
+    const clearCart = () => setItems([]);
+
     return (
-            <CartContext.Provider value={{ items, addItem, removeItem }}>
+            <CartContext.Provider value={{ items, addItem, removeItem, clearCart }}>
                 {children}
             </CartContext.Provider>
     );

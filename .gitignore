@@ -55,3 +55,7 @@ product-image-box.patch
 mobile-home.patch
 mobile-category.patch
 mobile-product.patch
+checkout-leftovers.patch
+mobile-cart-favorites.patch
+mobile-checkout-profile.patch
+cleanup-old-card-and-receipt.patch

@@ -1,58 +1,24 @@
-import Image from "next/image"
-import Link from "next/link"
-import { ShieldLock, ArrowRightLeft, BanknoteArrowDown, Mail, Phone, Send  } from "lucide-react"
-import { Facebook, Tiktok, Instagram, XFormerlyTwitter  } from "@thesvg/react";
+import { Suspense } from "react";
+import SiteHeader from "@/Frontend/components/navbar/SiteHeader";
+import AccountNav from "@/Frontend/components/navbar/AccountNav";
+import BottomTabBar from "@/Frontend/components/navbar/BottomTabBar";
+import SiteFooter from "@/Frontend/components/layout/SiteFooter";
 
+// Account pages now share the shop's header, bottom tab bar and footer (the old desktop sidebar is gone)
 export default function AccountLayout({children}: {children: React.ReactNode}){
     return(
         <>
-            <header className="flex items-center justify-center">
-                <Image src="/assets/Logo/logo.svg" width={200} height={100} alt="Brand logo" />
-            </header>
-            <main className="flex w-full">
-                <section className="w-[25%] border-r flex flex-col">
-                    <div className="w-full border-b flex flex-col items-start justify-start pl-1.5">
-                        <h1 className="my-0">Account</h1>
-                    </div>
-                    <div className="w-full border-b flex flex-col items-start justify-start pl-1.5">
-                        <Link href="/account"><h3 className="nav-link">Profile</h3></Link>
-                        <Link href="/account/order"><h3 className="nav-link">My Order</h3></Link>
-                        <Link href="/account/payment"><h3 className="nav-link">Payment</h3></Link>
-                        <Link href="/shopping-cart"><h3 className="nav-link">My Cart</h3></Link>
-                        <Link href="/favorite"><h3 className="nav-link">Favorite</h3></Link>
-                    </div>
-                    <div className="w-full flex flex-col items-start justify-start pl-1.5">
-                        <Link href=""><h3 className="nav-link">Customer Support</h3></Link>
-                        <Link href="/account/logout" className="btn bg-red-600 w-[50%] hover:bg-red-500 active:bg-red-600">Log out</Link>
-                    </div>
-                </section>
-                <section className="w-[70%] flex flex-col pt-2.5 relative">
+            <SiteHeader />
+            <main className="flex-1">
+                <div className="mx-auto w-full max-w-3xl px-4 pb-8 pt-2">
+                    <AccountNav />
                     {children}
-                </section>
+                </div>
             </main>
-            <footer className="Footer">
-                <ul className="media">
-                    <li>Follow Us</li>
-                    <li ><Facebook variant="mono" width={24} height={24} /> The Look Cambodia</li>
-                    <li ><Tiktok variant="mono" width={24} height={24} /> @theLookCambodia</li>
-                    <li ><Instagram variant="mono" width={24} height={24} /> @theLookCambodia</li>
-                    <li ><XFormerlyTwitter width={24} height={24} /> @theLookCambodia</li>
-                </ul>
-                <ul className="media">
-                    <li>Customer services</li>
-                    <li >
-                        <ShieldLock /> 
-                        Privacy Policy</li>
-                    <li ><ArrowRightLeft /> Item Exchange</li>
-                    <li ><BanknoteArrowDown /> Cash Refund</li>
-                </ul>
-                <ul className="media">
-                    <li>Contact Us</li>
-                    <li ><Mail /> tLook@gmail.com</li>
-                    <li ><Phone /> (+855) 23 888 999</li>
-                    <li ><Send /> @theLookCambodia</li>
-                </ul>
-        </footer>
+            <SiteFooter />
+            <Suspense fallback={null}>
+                <BottomTabBar />
+            </Suspense>
         </>
     )
 }
