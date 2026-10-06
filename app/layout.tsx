@@ -47,6 +47,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <CartProvider>{children}</CartProvider>
         <DemoNotice />
+        {/* Empty on screen. The receipt is placed here, and it is the only thing printed (see globals.css) */}
+        <div id="print-root" />
       </body>
     </html>
   );

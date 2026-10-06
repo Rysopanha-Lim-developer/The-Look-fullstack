@@ -9,8 +9,8 @@ export default function CartItemRow({ item }: { item: Product }) {
 
     return (
         <li className="flex gap-3 border-t border-line py-3 last:border-b">
-            <Link href={`/${item.slug}`} className="w-20 shrink-0" aria-hidden="true" tabIndex={-1}>
-                <ProductImage src={item.image} alt="" sizes="80px" />
+            <Link href={`/${item.slug}`} className="w-20 shrink-0 lg:w-24" aria-hidden="true" tabIndex={-1}>
+                <ProductImage src={item.image} alt="" sizes="(max-width: 1024px) 80px, 96px" />
             </Link>
 
             <div className="flex min-w-0 flex-1 flex-col">
@@ -18,17 +18,21 @@ export default function CartItemRow({ item }: { item: Product }) {
                     {item.name}
                 </Link>
                 <span className="mt-0.5 text-sm text-muted">{item.color}</span>
-                <span className="mt-1 text-sm font-medium">${item.price}</span>
+                <span className="mt-1 text-sm font-medium lg:hidden">${item.price}</span>
             </div>
 
-            <button
-                type="button"
-                onClick={() => removeItem(item.slug)}
-                aria-label={`Remove ${item.name} from cart`}
-                className="min-h-11 self-start px-1 text-sm text-muted underline"
-            >
-                Remove
-            </button>
+            <div className="flex flex-col items-end self-start">
+                {/* laptops: the price sits on the right, above Remove */}
+                <span className="hidden pr-1 text-sm font-medium lg:block">${item.price}</span>
+                <button
+                    type="button"
+                    onClick={() => removeItem(item.slug)}
+                    aria-label={`Remove ${item.name} from cart`}
+                    className="min-h-11 px-1 text-sm text-muted underline"
+                >
+                    Remove
+                </button>
+            </div>
         </li>
     );
 }

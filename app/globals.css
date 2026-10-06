@@ -198,3 +198,29 @@ body {
       }
     }
 }
+/* Receipt printing: #print-root holds the receipt (see Frontend/components/checkout/Receipt.tsx).
+   Hidden on screen. When printing, everything else in <body> is removed so only the receipt is on the paper. */
+#print-root {
+  display: none;
+}
+@media print {
+  @page {
+    margin: 16mm;
+  }
+  body > *:not(#print-root) {
+    display: none !important;
+  }
+  #print-root {
+    display: block;
+  }
+  /* paper is always white and light, even when the visitor is in dark mode */
+  :root,
+  :root[data-theme="dark"] {
+    color-scheme: light !important;
+    background: #fff !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}

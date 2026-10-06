@@ -2,12 +2,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Printer } from "lucide-react";
 import ActionBar from "@/Frontend/components/common/ActionBar/ActionBar";
 import { useCart } from "@/Frontend/hooks/CartContext";
 import { usePersonalInfo } from "@/Frontend/hooks/usePersonalInfo";
 import { CHECKOUT_PATH, PROFILE_PATH } from "@/Frontend/lib/personalInfo";
 import { money } from "@/Frontend/lib/money";
+import Receipt, { type ReceiptData } from "@/Frontend/components/checkout/Receipt";
+import { printReceipt } from "@/Frontend/lib/printReceipt";
 
 type Session = "loading" | "signed-in" | "signed-out" | "error";
 type OrderError = "details" | "signed-out" | "other" | null;
@@ -31,6 +33,7 @@ export default function Checkout(){
     const [submitting, setSubmitting] = useState(false);
     const [orderError, setOrderError] = useState<OrderError>(null);
     const [placed, setPlaced] = useState(false);
+    const [receipt, setReceipt] = useState<ReceiptData | null>(null); // a copy of the order, kept after the cart is cleared
 
     // Ask the server whether anyone is signed in (the same endpoint the old page used)
     useEffect(() => {
@@ -71,6 +74,20 @@ export default function Checkout(){
                 body: JSON.stringify({ items, userPersonalInfo: info }),
             });
             if (res.ok) {
+                // The server answers with the prices it really charged (and, when available, the order id and time).
+                // The receipt uses those; if the answer cannot be read, it falls back to what the cart showed.
+                const data = await res.json().catch(() => null);
+                const serverPrice = new Map<string, number>(
+                    (data?.orderItems ?? []).map((line: { productId: string; priceAtPurchase: number }) => [String(line.productId), line.priceAtPurchase]),
+                );
+                const lines = items.map(item => ({ name: item.name, color: item.color, price: serverPrice.get(String(item._id)) ?? item.price }));
+                setReceipt({
+                    orderId: typeof data?.orderId === "string" ? data.orderId : undefined,
+                    createdAt: typeof data?.createdAt === "string" ? data.createdAt : new Date().toISOString(),
+                    info,
+                    items: lines,
+                    total: lines.reduce((sum, line) => sum + line.price, 0),
+                });
                 setPlaced(true);
                 clearCart();
                 return;
@@ -92,7 +109,18 @@ export default function Checkout(){
                     Thank you! This is a demo store, so nothing will be delivered and nothing was charged.
                 </p>
                 <Link href="/account/order" className={primaryLink}>View my orders</Link>
+                {receipt && (
+                    <button
+                        type="button"
+                        onClick={() => printReceipt(receipt.orderId)}
+                        className="mt-2 flex h-12 items-center gap-2 rounded-full border border-foreground px-8 text-sm font-medium"
+                    >
+                        <Printer size={18} aria-hidden="true" />
+                        Print or save receipt
+                    </button>
+                )}
                 <Link href="/" className="mt-2 flex h-12 items-center px-6 text-sm text-muted underline">Keep shopping</Link>
+                {receipt && <Receipt receipt={receipt} />}
             </div>
         );
     }
@@ -151,13 +179,15 @@ export default function Checkout(){
 
     // 6. Ready to order
     return (
-        <div className="mx-auto w-full max-w-3xl px-4 pb-8 pt-2">
+        <div className="mx-auto w-full max-w-3xl px-4 pb-8 pt-2 lg:max-w-5xl lg:pb-16 lg:pt-6">
             <Link href="/shopping-cart" className="inline-flex min-h-11 items-center gap-1 text-sm text-muted">
                 <ChevronLeft size={16} aria-hidden="true" />
                 Cart
             </Link>
             <h1 className="m-0 mt-1 text-[1.75rem] font-medium leading-tight">Checkout</h1>
 
+            {/* laptops: delivery details on the left, a summary card that stays in view while scrolling on the right */}
+            <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-10">
             <section aria-labelledby="delivery-title" className="mt-5">
                 <div className="mb-2 flex items-center justify-between">
                     <h2 id="delivery-title" className="m-0 text-base font-medium">Delivery details</h2>
@@ -171,9 +201,10 @@ export default function Checkout(){
                 </div>
             </section>
 
-            <section aria-labelledby="summary-title" className="mt-6">
+            <aside className="lg:sticky lg:top-24 lg:mt-5 lg:rounded-xl lg:bg-chip lg:p-5">
+            <section aria-labelledby="summary-title" className="mt-6 lg:mt-0">
                 <h2 id="summary-title" className="m-0 mb-2 text-base font-medium">Order summary</h2>
-                <ul className="m-0 list-none rounded-xl border border-line bg-surface p-4 text-sm">
+                <ul className="m-0 list-none rounded-xl border border-line bg-surface p-4 text-sm lg:border-0 lg:bg-transparent lg:p-0">
                     {items.map(item => (
                         <li key={item._id} className="flex justify-between gap-4 py-1">
                             <span className="min-w-0">{item.name}</span>
@@ -198,7 +229,7 @@ export default function Checkout(){
                 {orderError === "other" && "Something went wrong and your order was not placed. Please try again."}
             </div>
 
-            <ActionBar>
+            <ActionBar className="lg:mt-4">
                 <button
                     type="button"
                     onClick={placeOrder}
@@ -208,6 +239,8 @@ export default function Checkout(){
                     {submitting ? "Placing order..." : `Place order · ${money(total)}`}
                 </button>
             </ActionBar>
+            </aside>
+            </div>
         </div>
     )
 }

@@ -77,5 +77,6 @@ export async function CreateOrder({items, userPersonalInfo:rawPersonalInfo}:Crea
     
 
     const orderData = await OrderModel.create({accountId, userPersonalInfo, orderItems})
-    return { items, userPersonalInfo, cookiesData, orderItems };
+    return { items, userPersonalInfo, cookiesData, orderItems, orderId: orderData._id.toString(), createdAt: orderData.createdAt };
+
 }
