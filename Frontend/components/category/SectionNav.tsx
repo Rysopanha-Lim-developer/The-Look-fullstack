@@ -5,7 +5,7 @@ type SectionNavProps = {
     sections: { id: string; title: string }[];
 };
 
-// Sticky pill row. It sits right under the 56px (h-14) site header, so both use the same number.
+// Sticky pill row. It sits right under the 56px (h-14), or 64px (lg:h-16), site header, so both use the same number.
 export default function SectionNav({ sections }: SectionNavProps) {
     const [active, setActive] = useState(sections[0]?.id);
     const rowRef = useRef<HTMLUListElement>(null);
@@ -42,7 +42,7 @@ export default function SectionNav({ sections }: SectionNavProps) {
     }, [active]);
 
     return (
-        <nav aria-label="Sections" className="sticky top-14 z-30 border-b border-line bg-background">
+        <nav aria-label="Sections" className="sticky top-14 z-30 lg:top-16 border-b border-line bg-background">
             <ul
                 ref={rowRef}
                 className="relative flex overflow-x-auto px-3 scrollbar-none [&::-webkit-scrollbar]:hidden"

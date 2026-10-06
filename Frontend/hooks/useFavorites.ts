@@ -2,6 +2,9 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import type { Product } from "@/Backend/models/product.model";
 
+// Only what a product card needs. Older saved items hold the full product, which is still fine to read.
+export type FavoriteItem = Pick<Product, "_id" | "slug" | "name" | "image" | "price">;
+
 // Same storage key and format your old code used, so the Favorites page keeps working.
 const STORAGE_KEY = "favorite-items";
 const CHANGE_EVENT = "favorites-changed"; // the "storage" event only fires in OTHER tabs, so we send our own for this tab
@@ -23,7 +26,7 @@ function subscribe(onChange: () => void) {
     };
 }
 
-function parse(raw: string): Product[] {
+function parse(raw: string): FavoriteItem[] {
     try {
         const value = JSON.parse(raw);
         if (!Array.isArray(value)) return [];
@@ -50,10 +53,10 @@ export function useFavorites() {
 
     // Tap once to save, tap again to remove (the old button added a duplicate every time)
     const toggle = useCallback(
-        (product: Product) => {
+        (product: FavoriteItem) => {
             const next = items.some(item => item._id === product._id)
                 ? items.filter(item => item._id !== product._id)
-                : [...items, product];
+                : [...items, { _id: product._id, slug: product.slug, name: product.name, image: product.image, price: product.price }];
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
             } catch {

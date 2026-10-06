@@ -17,7 +17,7 @@ export default function ProductDetail({props}: {props: Product}) {
     const crumb = findSectionForSlug(detail.slug);
 
     return (
-        <div className="mx-auto w-full max-w-5xl px-4 pb-8 pt-2 md:grid md:grid-cols-2 md:gap-10 md:pb-10">
+        <div className="mx-auto w-full max-w-page px-4 pb-8 pt-2 md:grid md:grid-cols-2 md:gap-10 md:pb-10">
             {crumb && (
                 <nav aria-label="Breadcrumb" className="md:col-span-2">
                     <Link href={crumb.href} className="inline-flex min-h-11 items-center gap-1 text-sm text-muted">

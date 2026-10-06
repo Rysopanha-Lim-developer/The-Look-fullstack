@@ -6,7 +6,7 @@ export default function ProductDetailSkeleton() {
     return (
         <div
             role="status"
-            className="mx-auto w-full max-w-5xl animate-pulse px-4 pb-8 pt-2 md:grid md:grid-cols-2 md:gap-10"
+            className="mx-auto w-full max-w-page animate-pulse px-4 pb-8 pt-2 md:grid md:grid-cols-2 md:gap-10"
         >
             <span className="sr-only">Loading product</span>
             <div className="mb-3 mt-3 h-5 w-36 rounded bg-chip md:col-span-2" />

@@ -13,13 +13,13 @@ export default async function HomeProducts() {
     return (
         <>
             {newArrivals.length > 0 && (
-                <section id="new-arrivals" aria-labelledby="new-arrivals-title" className="mt-8 scroll-mt-16">
-                    <h2 id="new-arrivals-title" className="m-0 mb-3 px-4 text-base font-medium">New arrivals</h2>
+                <section id="new-arrivals" aria-labelledby="new-arrivals-title" className="mt-8 scroll-mt-16 lg:mt-12 lg:scroll-mt-20">
+                    <h2 id="new-arrivals-title" className="m-0 mb-3 px-4 text-base font-medium lg:mb-4 lg:text-xl">New arrivals</h2>
                     {/* Phones: swipe row. Wider screens: a normal grid. */}
-                    <ul className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:overflow-visible">
+                    <ul className="flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 scrollbar-none [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-4 md:overflow-visible lg:gap-6">
                         {newArrivals.map(product => (
                             <li key={product._id} className="w-[42vw] max-w-48 shrink-0 snap-start md:w-auto md:max-w-none">
-                                <ProductCard product={product} sizes="(max-width: 768px) 42vw, 22vw" />
+                                <ProductCard product={product} sizes="(max-width: 768px) 42vw, (max-width: 1280px) 22vw, 300px" />
                             </li>
                         ))}
                     </ul>
@@ -27,12 +27,12 @@ export default async function HomeProducts() {
             )}
 
             {more.length > 0 && (
-                <section aria-labelledby="more-title" className="mt-8">
-                    <h2 id="more-title" className="m-0 mb-3 px-4 text-base font-medium">More to explore</h2>
-                    <ul className="grid grid-cols-2 gap-3 px-4 md:grid-cols-4">
+                <section aria-labelledby="more-title" className="mt-8 lg:mt-12">
+                    <h2 id="more-title" className="m-0 mb-3 px-4 text-base font-medium lg:mb-4 lg:text-xl">More to explore</h2>
+                    <ul className="grid grid-cols-2 gap-3 px-4 md:grid-cols-4 lg:gap-6">
                         {more.map(product => (
                             <li key={product._id}>
-                                <ProductCard product={product} sizes="(max-width: 768px) 46vw, 22vw" />
+                                <ProductCard product={product} sizes="(max-width: 768px) 46vw, (max-width: 1280px) 22vw, 300px" />
                             </li>
                         ))}
                     </ul>
@@ -45,9 +45,9 @@ export default async function HomeProducts() {
 // Gray placeholders shown while the products load
 export function HomeProductsSkeleton() {
     return (
-        <section aria-hidden="true" className="mt-8 px-4">
+        <section aria-hidden="true" className="mt-8 px-4 lg:mt-12">
             <div className="mb-3 h-5 w-32 rounded bg-chip" />
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:gap-6">
                 {Array.from({ length: 4 }).map((_, index) => (
                     <div key={index} className="aspect-square rounded-xl bg-panel" />
                 ))}

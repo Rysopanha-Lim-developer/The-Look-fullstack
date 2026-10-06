@@ -7,7 +7,7 @@ import type { CategoryConfig } from "./categoryConfig";
 // Shared by the Men, Women, Girls and Boys pages. Each page only passes its own config.
 export default function CategoryPage({ config }: { config: CategoryConfig }) {
     return (
-        <div className="mx-auto w-full max-w-5xl pb-6">
+        <div className="mx-auto w-full max-w-page pb-6">
             <Suspense fallback={<CategorySkeleton config={config} />}>
                 <CategoryContent config={config} />
             </Suspense>

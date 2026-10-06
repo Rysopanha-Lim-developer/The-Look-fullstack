@@ -31,11 +31,15 @@ body {
   font-family: var(--font-roboto), sans-serif;
 }
 
+/* true only on devices that can really hover (mouse, trackpad), not on touch screens */
+@custom-variant can-hover (@media (hover: hover));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--ink-muted);
   --color-line: var(--line);
+  --container-page: 80rem; /* max-w-page: 1280px content cap, so 4K screens get empty sides instead of a stretched page */
   --color-chip: var(--chip);
   --color-panel: var(--image-panel);
   --color-accent: var(--accent);
