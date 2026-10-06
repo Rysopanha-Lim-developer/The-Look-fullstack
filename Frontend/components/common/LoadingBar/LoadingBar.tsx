@@ -1,13 +1,13 @@
 export default function LoadingBar(){
     return (
-    <div className="flex h-dvh w-full items-center justify-center bg-white">
+    <div className="flex h-dvh w-full items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
         {/* Custom animated loading bar */}
-        <div className="relative h-0.75 w-48 overflow-hidden rounded-full bg-[#121212]/10">
-            <div className="loading-bar-fill absolute inset-y-0 left-0 w-1/3 rounded-full bg-[#121212]" />
+        <div className="relative h-0.75 w-48 overflow-hidden rounded-full bg-foreground/10">
+            <div className="loading-bar-fill absolute inset-y-0 left-0 w-1/3 rounded-full bg-foreground" />
         </div>
 
-        <p className="text-sm tracking-wide text-[#121212]">Loading</p>
+        <p className="text-sm tracking-wide text-foreground">Loading</p>
         </div>
 
         <style>{`

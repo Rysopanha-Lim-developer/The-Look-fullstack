@@ -10,7 +10,7 @@ export default function CategoryTiles() {
                     <li key={category.href}>
                         <Link
                             href={category.href}
-                            className="flex aspect-square items-end rounded-xl bg-panel p-3 text-base font-medium transition active:scale-[0.98] lg:aspect-video lg:p-5 lg:text-lg"
+                            className="flex h-20 items-end rounded-xl bg-tile p-3 text-base font-medium transition active:scale-[0.98] lg:p-4 lg:text-lg"
                         >
                             {category.label}
                         </Link>

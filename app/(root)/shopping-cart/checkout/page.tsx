@@ -163,7 +163,7 @@ export default function Checkout(){
                     <h2 id="delivery-title" className="m-0 text-base font-medium">Delivery details</h2>
                     <Link href={editDetailsHref} className="inline-flex min-h-11 items-center px-1 text-sm text-muted underline">Edit</Link>
                 </div>
-                <div className="rounded-xl border border-line bg-white p-4 text-sm leading-relaxed">
+                <div className="rounded-xl border border-line bg-surface p-4 text-sm leading-relaxed">
                     <p className="m-0 font-medium">{info.firstname} {info.lastname}</p>
                     <p className="m-0">{info.telephone}</p>
                     <p className="m-0">{info.email}</p>
@@ -173,7 +173,7 @@ export default function Checkout(){
 
             <section aria-labelledby="summary-title" className="mt-6">
                 <h2 id="summary-title" className="m-0 mb-2 text-base font-medium">Order summary</h2>
-                <ul className="m-0 list-none rounded-xl border border-line bg-white p-4 text-sm">
+                <ul className="m-0 list-none rounded-xl border border-line bg-surface p-4 text-sm">
                     {items.map(item => (
                         <li key={item._id} className="flex justify-between gap-4 py-1">
                             <span className="min-w-0">{item.name}</span>

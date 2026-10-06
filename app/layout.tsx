@@ -28,12 +28,21 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// Runs before the first paint: applies the saved theme and sidebar choice so the page never flashes the wrong one.
+// No saved theme means light (the visitor switches manually; we do not follow the device setting).
+const PREFERENCES_SCRIPT = `(function(){var d=document.documentElement;try{d.dataset.theme=localStorage.getItem("theme")==="dark"?"dark":"light";if(localStorage.getItem("category-sidebar")==="closed")d.dataset.sidebar="closed";}catch(e){d.dataset.theme="light";}})();`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // suppressHydrationWarning: the script above changes <html> attributes before React loads, which is expected
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${roboto.variable} ${robotoMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: PREFERENCES_SCRIPT }} />
+      </head>
       {/* CartProvider lives here (not in a route-group layout) so the cart survives moving between shop, account and login pages */}
       <body className="min-h-full flex flex-col">
         <CartProvider>{children}</CartProvider>

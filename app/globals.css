@@ -2,6 +2,7 @@
 
 
 :root {
+  color-scheme: light;
   --background: #FAFAF8;
   --foreground: #171717;
   --ink-muted: #5E5B55;
@@ -10,6 +11,12 @@
   --accent: #FF7A1A; /* small fills only (badges); never for text */
   --danger: #B3261E; /* errors and destructive actions */
   --field: #8F8B82; /* form input borders */
+  --surface: #FFFFFF; /* inputs and cards that sit on the page */
+  --tile: #ECECEA; /* text-only tiles (category tiles); product photos use --image-panel */
+  --banner: #171717; /* sale banner */
+  --banner-foreground: #FAFAF8;
+  --on-light: #171717; /* text on surfaces that stay light in both themes (cart badge, banner button) */
+  --btn-text: #FFFFFF;
 
   /* product image box: one shared shape and panel color for every product photo */
   --image-panel: #ECECEA;
@@ -20,6 +27,32 @@
     --header-btn-hover : rgb(31, 29, 29);
     --header-btn-active : rgba(0, 0, 0, 0.7);
 }
+
+/* Dark theme. The visitor picks it with the header button; the script in app/layout.tsx sets data-theme before the first paint.
+   --image-panel is NOT redefined on purpose: product photos have light backgrounds, so their panel stays light. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #141413;
+  --foreground: #F2F0EB;
+  --ink-muted: #A9A59C;
+  --line: #2E2D2A;
+  --chip: #23221F;
+  --danger: #F2877F; /* the light-theme red is only 2.8:1 on this background */
+  --field: #8F8B82;
+  --surface: #1C1B19;
+  --tile: #23221F;
+  --banner: #2B2A27;
+  --banner-foreground: #F2F0EB;
+  --btn-text: #171717;
+  --header-btn: #F2F0EB;
+  --header-btn-hover: #D9D6CE;
+  --header-btn-active: rgba(242, 240, 235, 0.7);
+}
+
+/* Lets Tailwind use dark: classes with our data-theme attribute instead of the device setting */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* True when the visitor hid the category sidebar (set before first paint by the script in app/layout.tsx) */
+@custom-variant sidebar-closed (html[data-sidebar="closed"] &);
 
 html, body{
   scroll-snap-align: top;
@@ -42,6 +75,11 @@ body {
   --container-page: 80rem; /* max-w-page: 1280px content cap, so 4K screens get empty sides instead of a stretched page */
   --color-chip: var(--chip);
   --color-panel: var(--image-panel);
+  --color-surface: var(--surface);
+  --color-tile: var(--tile);
+  --color-banner: var(--banner);
+  --color-banner-foreground: var(--banner-foreground);
+  --color-on-light: var(--on-light);
   --color-accent: var(--accent);
   --color-danger: var(--danger);
   --color-field: var(--field);
@@ -105,13 +143,17 @@ body {
     /* The ::after underline animation */
     &::after {
       content: '';
-      @apply absolute w-full h-0.5 bottom-0 left-0 bg-black scale-x-0 origin-bottom-left transition-transform duration-250 ease-out;
+      @apply absolute w-full h-0.5 bottom-0 left-0 bg-foreground scale-x-0 origin-bottom-left transition-transform duration-250 ease-out;
     }
 
     /* The hover state */
     &:hover::after {
       @apply scale-x-100;
     }
+  }
+  /* the footer stays black in dark mode too, so a thin line keeps it apart from the page */
+  :root[data-theme="dark"] .Footer {
+    border-top: 1px solid var(--line);
   }
   .Footer {
     /* stacked on phones, three columns from md up */
@@ -143,7 +185,7 @@ body {
       @apply cursor-pointer px-1.75 py-1.5 font-semibold outline-none border-2 rounded-md flex items-center justify-center ;
       font-family: var(--font-roboto);
       background-color: var(--header-btn);
-      color: rgb(255, 255, 255);
+      color: var(--btn-text);
 
       a {
         @apply no-underline ;

@@ -17,7 +17,7 @@ export default function FormField({ id, label, error, className, ...inputProps }
                 id={id}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? errorId : undefined}
-                className={`h-12 w-full rounded-lg border bg-white px-3 text-base text-foreground ${error ? "border-danger" : "border-field"}`}
+                className={`h-12 w-full rounded-lg border bg-surface px-3 text-base text-foreground ${error ? "border-danger" : "border-field"}`}
                 {...inputProps}
             />
             {error && <p id={errorId} className="m-0 mt-1 text-sm text-danger">{error}</p>}

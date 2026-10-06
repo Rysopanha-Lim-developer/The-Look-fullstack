@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, User } from "lucide-react";
 import CartLink from "./CartLink";
+import ThemeToggle from "./ThemeToggle";
 import { CATEGORIES } from "./categories";
 
 export default function SiteHeader() {
@@ -10,7 +11,7 @@ export default function SiteHeader() {
         <header className="sticky top-0 z-40 h-14 border-b lg:h-16 border-line bg-background print:hidden">
             <div className="mx-auto flex h-full w-full max-w-page items-center justify-between px-4">
                 <Link href="/" aria-label="The Look, home" className="flex items-center">
-                    <Image src="/assets/Logo/logo.svg" alt="The Look" width={200} height={100} className="h-9 w-auto lg:h-10" />
+                    <Image src="/assets/Logo/logo.svg" alt="The Look" width={200} height={100} className="h-9 w-auto lg:h-10 dark:invert" />
                 </Link>
 
                 {/* Category links only show on wider screens; phones use the bottom tab bar */}
@@ -23,6 +24,7 @@ export default function SiteHeader() {
                 </nav>
 
                 <div className="flex items-center">
+                    <ThemeToggle />
                     <Link href="/favorite" aria-label="Favorites" className="flex size-11 items-center justify-center">
                         <Heart size={22} aria-hidden="true" />
                     </Link>

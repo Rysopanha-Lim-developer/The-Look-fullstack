@@ -137,7 +137,7 @@ function ProfileFields({ saved, savedIsComplete, save }: ProfileFieldsProps) {
                             <label
                                 key={gender.value}
                                 className={`flex min-h-12 cursor-pointer items-center justify-center rounded-lg border px-2 text-center text-sm focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-foreground ${
-                                    draft.gender === gender.value ? "border-foreground bg-foreground text-background" : "border-field bg-white"
+                                    draft.gender === gender.value ? "border-foreground bg-foreground text-background" : "border-field bg-surface"
                                 }`}
                             >
                                 <input

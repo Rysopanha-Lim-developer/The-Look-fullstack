@@ -17,7 +17,7 @@ export default function OrderDisplayCard({props}:{props: Order[]}){
                 const { firstname, lastname, cityNprovince } = order.userPersonalInfo ?? {};
                 return (
                 <li key={id}>
-                    <article className="rounded-xl border border-line bg-white p-4 text-sm">
+                    <article className="rounded-xl border border-line bg-surface p-4 text-sm">
                         <div className="flex items-baseline justify-between gap-3">
                             {/* the full ID is long, so only the last 6 characters are shown */}
                             <h3 className="m-0 text-sm font-medium">Order #{id.slice(-6).toUpperCase()}</h3>

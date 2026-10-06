@@ -25,7 +25,7 @@ export default function PasswordField({ id, label, error, hint, className, ...in
                     type={visible ? "text" : "password"}
                     aria-invalid={error ? true : undefined}
                     aria-describedby={describedBy}
-                    className={`h-12 w-full rounded-lg border bg-white pl-3 pr-12 text-base text-foreground ${error ? "border-danger" : "border-field"}`}
+                    className={`h-12 w-full rounded-lg border bg-surface pl-3 pr-12 text-base text-foreground ${error ? "border-danger" : "border-field"}`}
                     {...inputProps}
                 />
                 <button
