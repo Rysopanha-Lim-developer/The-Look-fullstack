@@ -11,7 +11,7 @@ export default function FavoritePage(){
         return (
             <div aria-hidden="true" className="mx-auto w-full max-w-page px-4 pt-4">
                 <div className="h-8 w-32 rounded bg-chip" />
-                <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4 lg:gap-6">
                     <div className="aspect-square rounded-xl bg-panel" />
                     <div className="aspect-square rounded-xl bg-panel" />
                 </div>
@@ -32,10 +32,10 @@ export default function FavoritePage(){
     }
 
     return (
-        <div className="mx-auto w-full max-w-page px-4 pb-6 pt-4">
+        <div className="mx-auto w-full max-w-page px-4 pb-6 pt-4 lg:pb-12 lg:pt-8">
             <h1 className="m-0 text-[1.75rem] font-medium leading-tight">Favorites</h1>
             <p className="m-0 mb-4 mt-0.5 text-sm text-muted">{items.length} {items.length === 1 ? "item" : "items"}</p>
-            <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-4">
+            <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-4 lg:gap-6">
                 {items.map(product => (
                     <li key={product._id}>
                         <ProductCard product={product} sizes="(max-width: 768px) 46vw, (max-width: 1280px) 22vw, 300px" />
