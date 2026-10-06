@@ -1,36 +1,15 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 type SectionNavProps = {
     sections: { id: string; title: string }[];
+    active: string | undefined;
 };
 
-// Sticky pill row. It sits right under the 56px (h-14), or 64px (lg:h-16), site header, so both use the same number.
-export default function SectionNav({ sections }: SectionNavProps) {
-    const [active, setActive] = useState(sections[0]?.id);
+// Phones and tablets: sticky pill row. It sits right under the 56px (h-14) site header.
+// Laptops use the sidebar instead, so this row is hidden from lg up.
+export default function SectionNav({ sections, active }: SectionNavProps) {
     const rowRef = useRef<HTMLUListElement>(null);
-
-    // Scroll spy: the active section is the last one whose top edge has passed just under the sticky bars
-    useEffect(() => {
-        let frame = 0;
-        const update = () => {
-            frame = 0;
-            let current = sections[0]?.id;
-            for (const { id } of sections) {
-                const element = document.getElementById(id);
-                if (element && element.getBoundingClientRect().top <= 130) current = id;
-            }
-            setActive(current);
-        };
-        const onScroll = () => {
-            if (!frame) frame = requestAnimationFrame(update);
-        };
-        window.addEventListener("scroll", onScroll, { passive: true });
-        return () => {
-            window.removeEventListener("scroll", onScroll);
-            cancelAnimationFrame(frame);
-        };
-    }, [sections]);
 
     // Keep the active pill centered in the row when the row is wider than the screen
     useEffect(() => {
@@ -42,7 +21,7 @@ export default function SectionNav({ sections }: SectionNavProps) {
     }, [active]);
 
     return (
-        <nav aria-label="Sections" className="sticky top-14 z-30 lg:top-16 border-b border-line bg-background">
+        <nav aria-label="Sections" className="sticky top-14 z-30 border-b border-line bg-background lg:hidden">
             <ul
                 ref={rowRef}
                 className="relative flex overflow-x-auto px-3 scrollbar-none [&::-webkit-scrollbar]:hidden"

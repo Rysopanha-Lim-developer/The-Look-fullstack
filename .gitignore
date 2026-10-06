@@ -41,26 +41,13 @@ yarn-error.log*
 next-env.d.ts
 
 
-#project structure
-folder-structure.md
-nextjs-frontend-backend-split.md
-recommendations.md
-recommendationV2.md
+
 
 #test folder component
 form
-#test commit
 
 #ui update
-product-image-box.patch
-mobile-home.patch
-mobile-category.patch
-mobile-product.patch
-checkout-leftovers.patch
-mobile-cart-favorites.patch
-mobile-checkout-profile.patch
-cleanup-old-card-and-receipt.patch
-mobile-auth-orders-notice.patch
-fix-account-redirect.patch
-desktop-home.patch
-hover-heart.patch
+frontend-ui-patch
+
+#recommendation
+recommendations
