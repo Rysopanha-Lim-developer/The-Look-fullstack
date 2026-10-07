@@ -1,0 +1,396 @@
+diff --git a/Frontend/components/cart/CartItemRow.tsx b/Frontend/components/cart/CartItemRow.tsx
+index f0e71ee..75023de 100644
+--- a/Frontend/components/cart/CartItemRow.tsx
++++ b/Frontend/components/cart/CartItemRow.tsx
+@@ -9,8 +9,8 @@ export default function CartItemRow({ item }: { item: Product }) {
+ 
+     return (
+         <li className="flex gap-3 border-t border-line py-3 last:border-b">
+-            <Link href={`/${item.slug}`} className="w-20 shrink-0" aria-hidden="true" tabIndex={-1}>
+-                <ProductImage src={item.image} alt="" sizes="80px" />
++            <Link href={`/${item.slug}`} className="w-20 shrink-0 lg:w-24" aria-hidden="true" tabIndex={-1}>
++                <ProductImage src={item.image} alt="" sizes="(max-width: 1024px) 80px, 96px" />
+             </Link>
+ 
+             <div className="flex min-w-0 flex-1 flex-col">
+@@ -18,17 +18,21 @@ export default function CartItemRow({ item }: { item: Product }) {
+                     {item.name}
+                 </Link>
+                 <span className="mt-0.5 text-sm text-muted">{item.color}</span>
+-                <span className="mt-1 text-sm font-medium">${item.price}</span>
++                <span className="mt-1 text-sm font-medium lg:hidden">${item.price}</span>
+             </div>
+ 
+-            <button
+-                type="button"
+-                onClick={() => removeItem(item.slug)}
+-                aria-label={`Remove ${item.name} from cart`}
+-                className="min-h-11 self-start px-1 text-sm text-muted underline"
+-            >
+-                Remove
+-            </button>
++            <div className="flex flex-col items-end self-start">
++                {/* laptops: the price sits on the right, above Remove */}
++                <span className="hidden pr-1 text-sm font-medium lg:block">${item.price}</span>
++                <button
++                    type="button"
++                    onClick={() => removeItem(item.slug)}
++                    aria-label={`Remove ${item.name} from cart`}
++                    className="min-h-11 px-1 text-sm text-muted underline"
++                >
++                    Remove
++                </button>
++            </div>
+         </li>
+     );
+ }
+diff --git a/Frontend/components/checkout/Receipt.tsx b/Frontend/components/checkout/Receipt.tsx
+new file mode 100644
+index 0000000..8a411cb
+--- /dev/null
++++ b/Frontend/components/checkout/Receipt.tsx
+@@ -0,0 +1,86 @@
++"use client";
++import { useSyncExternalStore } from "react";
++import { createPortal } from "react-dom";
++import type { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
++import { money } from "@/Frontend/lib/money";
++
++export type ReceiptData = {
++    orderId?: string; // full order id from the server; shown as the same short "#ABC123" the Orders page uses
++    createdAt: string; // ISO date text
++    info: UserPersonalInfo;
++    items: { name: string; color?: string; price: number }[];
++    total: number;
++};
++
++const noopSubscribe = () => () => {};
++
++// The receipt is never seen on screen. It is placed inside <div id="print-root"> (see app/layout.tsx),
++// which is hidden on screen and is the ONLY thing left visible when printing or saving as PDF (see globals.css).
++// Colors are fixed (not theme tokens) so the paper copy is the same in light and dark mode.
++export default function Receipt({ receipt }: { receipt: ReceiptData }) {
++    // false on the server and during hydration, true in the browser afterwards (document does not exist on the server)
++    const isBrowser = useSyncExternalStore(noopSubscribe, () => true, () => false);
++    const target = isBrowser ? document.getElementById("print-root") : null;
++    if (!target) return null;
++
++    const { info } = receipt;
++    const date = new Date(receipt.createdAt).toLocaleString("en-US", {
++        timeZone: "Asia/Phnom_Penh",
++        dateStyle: "medium",
++        timeStyle: "short",
++    });
++
++    return createPortal(
++        <article className="mx-auto w-full max-w-[170mm] bg-white text-[13px] leading-relaxed text-black">
++            <header className="flex items-baseline justify-between border-b-2 border-black pb-3">
++                <h1 className="m-0 text-2xl font-medium tracking-wide">THE LOOK</h1>
++                <p className="m-0 text-base">Receipt</p>
++            </header>
++
++            <section className="mt-4 flex justify-between gap-6">
++                <div>
++                    {receipt.orderId && <p className="m-0 font-medium">Order #{receipt.orderId.slice(-6).toUpperCase()}</p>}
++                    <p className="m-0">{date} (Phnom Penh time)</p>
++                </div>
++                <div className="text-right">
++                    <p className="m-0 font-medium">Delivery details</p>
++                    <p className="m-0">{info.firstname} {info.lastname}</p>
++                    <p className="m-0">{info.telephone}</p>
++                    <p className="m-0">{info.email}</p>
++                    <p className="m-0">{info.street}, {info.commune}, {info.district}, {info.cityNprovince}</p>
++                </div>
++            </section>
++
++            <table className="mt-6 w-full border-collapse text-left">
++                <thead>
++                    <tr className="border-b border-black">
++                        <th className="py-2 pr-3 font-medium">Item</th>
++                        <th className="py-2 pr-3 font-medium">Color</th>
++                        <th className="py-2 text-right font-medium">Price</th>
++                    </tr>
++                </thead>
++                <tbody>
++                    {receipt.items.map((item, index) => (
++                        <tr key={index} className="border-b border-neutral-300">
++                            <td className="py-2 pr-3">{item.name}</td>
++                            <td className="py-2 pr-3">{item.color ?? ""}</td>
++                            <td className="py-2 text-right">{money(item.price)}</td>
++                        </tr>
++                    ))}
++                </tbody>
++                <tfoot>
++                    <tr>
++                        <td colSpan={2} className="pt-3 text-base font-medium">Total</td>
++                        <td className="pt-3 text-right text-base font-medium">{money(receipt.total)}</td>
++                    </tr>
++                </tfoot>
++            </table>
++
++            <p className="mt-10 border border-black p-3 text-center">
++                <strong className="font-medium">Demo store.</strong> This is a learning project, not a real shop. Nothing was sold or
++                delivered, and no payment was taken. This receipt has no value.
++            </p>
++        </article>,
++        target,
++    );
++}
+diff --git a/Frontend/components/common/ActionBar/ActionBar.tsx b/Frontend/components/common/ActionBar/ActionBar.tsx
+index 27a149c..9605e27 100644
+--- a/Frontend/components/common/ActionBar/ActionBar.tsx
++++ b/Frontend/components/common/ActionBar/ActionBar.tsx
+@@ -2,9 +2,9 @@ import type { ReactNode } from "react";
+ 
+ // A bar fixed to the bottom of the screen on phones (it sits over the tab bar on pages that use it),
+ // and a normal block on wider screens. Used by the cart, checkout and profile pages.
+-export default function ActionBar({ children }: { children: ReactNode }) {
++export default function ActionBar({ children, className = "" }: { children: ReactNode; className?: string }) {
+     return (
+-        <div className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:z-auto md:mt-6 md:border-0 md:bg-transparent md:p-0">
++        <div className={`fixed inset-x-0 bottom-0 z-50 border-t border-line bg-background px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:static md:z-auto md:mt-6 md:border-0 md:bg-transparent md:p-0 ${className}`}>
+             <div className="mx-auto max-w-lg md:max-w-none">{children}</div>
+         </div>
+     );
+diff --git a/Frontend/lib/printReceipt.ts b/Frontend/lib/printReceipt.ts
+new file mode 100644
+index 0000000..c082f86
+--- /dev/null
++++ b/Frontend/lib/printReceipt.ts
+@@ -0,0 +1,8 @@
++// Opens the browser's print window. From there the visitor can print, or choose "Save as PDF" as the printer.
++// The browser uses the page title as the PDF file name, so we set a clear one while printing.
++export function printReceipt(orderId?: string) {
++    const previousTitle = document.title;
++    document.title = orderId ? `The Look receipt ${orderId.slice(-6).toUpperCase()}` : "The Look receipt";
++    window.addEventListener("afterprint", () => { document.title = previousTitle; }, { once: true });
++    window.print();
++}
+diff --git a/app/(root)/shopping-cart/checkout/page.tsx b/app/(root)/shopping-cart/checkout/page.tsx
+index eb6a466..a87a0ec 100644
+--- a/app/(root)/shopping-cart/checkout/page.tsx
++++ b/app/(root)/shopping-cart/checkout/page.tsx
+@@ -2,12 +2,14 @@
+ import Link from "next/link";
+ import { useEffect, useState } from "react";
+ import { useRouter } from "next/navigation";
+-import { ChevronLeft } from "lucide-react";
++import { ChevronLeft, Printer } from "lucide-react";
+ import ActionBar from "@/Frontend/components/common/ActionBar/ActionBar";
+ import { useCart } from "@/Frontend/hooks/CartContext";
+ import { usePersonalInfo } from "@/Frontend/hooks/usePersonalInfo";
+ import { CHECKOUT_PATH, PROFILE_PATH } from "@/Frontend/lib/personalInfo";
+ import { money } from "@/Frontend/lib/money";
++import Receipt, { type ReceiptData } from "@/Frontend/components/checkout/Receipt";
++import { printReceipt } from "@/Frontend/lib/printReceipt";
+ 
+ type Session = "loading" | "signed-in" | "signed-out" | "error";
+ type OrderError = "details" | "signed-out" | "other" | null;
+@@ -31,6 +33,7 @@ export default function Checkout(){
+     const [submitting, setSubmitting] = useState(false);
+     const [orderError, setOrderError] = useState<OrderError>(null);
+     const [placed, setPlaced] = useState(false);
++    const [receipt, setReceipt] = useState<ReceiptData | null>(null); // a copy of the order, kept after the cart is cleared
+ 
+     // Ask the server whether anyone is signed in (the same endpoint the old page used)
+     useEffect(() => {
+@@ -71,6 +74,20 @@ export default function Checkout(){
+                 body: JSON.stringify({ items, userPersonalInfo: info }),
+             });
+             if (res.ok) {
++                // The server answers with the prices it really charged (and, when available, the order id and time).
++                // The receipt uses those; if the answer cannot be read, it falls back to what the cart showed.
++                const data = await res.json().catch(() => null);
++                const serverPrice = new Map<string, number>(
++                    (data?.orderItems ?? []).map((line: { productId: string; priceAtPurchase: number }) => [String(line.productId), line.priceAtPurchase]),
++                );
++                const lines = items.map(item => ({ name: item.name, color: item.color, price: serverPrice.get(String(item._id)) ?? item.price }));
++                setReceipt({
++                    orderId: typeof data?.orderId === "string" ? data.orderId : undefined,
++                    createdAt: typeof data?.createdAt === "string" ? data.createdAt : new Date().toISOString(),
++                    info,
++                    items: lines,
++                    total: lines.reduce((sum, line) => sum + line.price, 0),
++                });
+                 setPlaced(true);
+                 clearCart();
+                 return;
+@@ -92,7 +109,18 @@ export default function Checkout(){
+                     Thank you! This is a demo store, so nothing will be delivered and nothing was charged.
+                 </p>
+                 <Link href="/account/order" className={primaryLink}>View my orders</Link>
++                {receipt && (
++                    <button
++                        type="button"
++                        onClick={() => printReceipt(receipt.orderId)}
++                        className="mt-2 flex h-12 items-center gap-2 rounded-full border border-foreground px-8 text-sm font-medium"
++                    >
++                        <Printer size={18} aria-hidden="true" />
++                        Print or save receipt
++                    </button>
++                )}
+                 <Link href="/" className="mt-2 flex h-12 items-center px-6 text-sm text-muted underline">Keep shopping</Link>
++                {receipt && <Receipt receipt={receipt} />}
+             </div>
+         );
+     }
+@@ -151,13 +179,15 @@ export default function Checkout(){
+ 
+     // 6. Ready to order
+     return (
+-        <div className="mx-auto w-full max-w-3xl px-4 pb-8 pt-2">
++        <div className="mx-auto w-full max-w-3xl px-4 pb-8 pt-2 lg:max-w-5xl lg:pb-16 lg:pt-6">
+             <Link href="/shopping-cart" className="inline-flex min-h-11 items-center gap-1 text-sm text-muted">
+                 <ChevronLeft size={16} aria-hidden="true" />
+                 Cart
+             </Link>
+             <h1 className="m-0 mt-1 text-[1.75rem] font-medium leading-tight">Checkout</h1>
+ 
++            {/* laptops: delivery details on the left, a summary card that stays in view while scrolling on the right */}
++            <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-10">
+             <section aria-labelledby="delivery-title" className="mt-5">
+                 <div className="mb-2 flex items-center justify-between">
+                     <h2 id="delivery-title" className="m-0 text-base font-medium">Delivery details</h2>
+@@ -171,9 +201,10 @@ export default function Checkout(){
+                 </div>
+             </section>
+ 
+-            <section aria-labelledby="summary-title" className="mt-6">
++            <aside className="lg:sticky lg:top-24 lg:mt-5 lg:rounded-xl lg:bg-chip lg:p-5">
++            <section aria-labelledby="summary-title" className="mt-6 lg:mt-0">
+                 <h2 id="summary-title" className="m-0 mb-2 text-base font-medium">Order summary</h2>
+-                <ul className="m-0 list-none rounded-xl border border-line bg-surface p-4 text-sm">
++                <ul className="m-0 list-none rounded-xl border border-line bg-surface p-4 text-sm lg:border-0 lg:bg-transparent lg:p-0">
+                     {items.map(item => (
+                         <li key={item._id} className="flex justify-between gap-4 py-1">
+                             <span className="min-w-0">{item.name}</span>
+@@ -198,7 +229,7 @@ export default function Checkout(){
+                 {orderError === "other" && "Something went wrong and your order was not placed. Please try again."}
+             </div>
+ 
+-            <ActionBar>
++            <ActionBar className="lg:mt-4">
+                 <button
+                     type="button"
+                     onClick={placeOrder}
+@@ -208,6 +239,8 @@ export default function Checkout(){
+                     {submitting ? "Placing order..." : `Place order · ${money(total)}`}
+                 </button>
+             </ActionBar>
++            </aside>
++            </div>
+         </div>
+     )
+ }
+diff --git a/app/(root)/shopping-cart/page.tsx b/app/(root)/shopping-cart/page.tsx
+index d522653..29bfd8b 100644
+--- a/app/(root)/shopping-cart/page.tsx
++++ b/app/(root)/shopping-cart/page.tsx
+@@ -22,30 +22,37 @@ export default function CartPage(){
+     }
+ 
+     return (
+-        <div className="mx-auto w-full max-w-3xl px-4 pb-8 pt-4">
++        <div className="mx-auto w-full max-w-3xl px-4 pb-8 pt-4 lg:max-w-5xl lg:pb-16 lg:pt-8">
+             <h1 className="m-0 text-[1.75rem] font-medium leading-tight">Cart</h1>
+             <p className="m-0 mb-3 mt-0.5 text-sm text-muted">{items.length} {items.length === 1 ? "item" : "items"}</p>
+ 
+-            <ul className="m-0 list-none p-0">
+-                {items.map(item => (
+-                    <CartItemRow key={item._id} item={item} />
+-                ))}
+-            </ul>
+-
+-            <p className="m-0 mt-3 text-sm text-muted">Delivery and any taxes are not calculated yet.</p>
+-
+-            <ActionBar>
+-                <div className="mb-3 flex items-baseline justify-between">
+-                    <span className="text-sm text-muted">Subtotal</span>
+-                    <span className="text-lg font-medium">{money(subtotal)}</span>
++            {/* laptops: items on the left, a summary card that stays in view while scrolling on the right */}
++            <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-10">
++                <div>
++                    <ul className="m-0 list-none p-0">
++                        {items.map(item => (
++                            <CartItemRow key={item._id} item={item} />
++                        ))}
++                    </ul>
++                    <p className="m-0 mt-3 text-sm text-muted lg:hidden">Delivery and any taxes are not calculated yet.</p>
+                 </div>
+-                <Link
+-                    href="/shopping-cart/checkout"
+-                    className="flex h-12 w-full items-center justify-center rounded-full bg-foreground text-sm font-medium text-background"
+-                >
+-                    Checkout
+-                </Link>
+-            </ActionBar>
++
++                <aside aria-label="Order total" className="lg:sticky lg:top-24 lg:rounded-xl lg:bg-chip lg:p-5">
++                    <ActionBar className="lg:mt-0">
++                        <div className="mb-3 flex items-baseline justify-between">
++                            <span className="text-sm text-muted">Subtotal</span>
++                            <span className="text-lg font-medium">{money(subtotal)}</span>
++                        </div>
++                        <Link
++                            href="/shopping-cart/checkout"
++                            className="flex h-12 w-full items-center justify-center rounded-full bg-foreground text-sm font-medium text-background"
++                        >
++                            Checkout
++                        </Link>
++                    </ActionBar>
++                    <p className="m-0 mt-3 hidden text-sm text-muted lg:block">Delivery and any taxes are not calculated yet.</p>
++                </aside>
++            </div>
+         </div>
+     )
+ }
+diff --git a/app/globals.css b/app/globals.css
+index fc171b1..c1ac86b 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -197,4 +197,30 @@ body {
+         background-color: var(--header-btn-active);
+       }
+     }
+-}
+\ No newline at end of file
++}
++/* Receipt printing: #print-root holds the receipt (see Frontend/components/checkout/Receipt.tsx).
++   Hidden on screen. When printing, everything else in <body> is removed so only the receipt is on the paper. */
++#print-root {
++  display: none;
++}
++@media print {
++  @page {
++    margin: 16mm;
++  }
++  body > *:not(#print-root) {
++    display: none !important;
++  }
++  #print-root {
++    display: block;
++  }
++  /* paper is always white and light, even when the visitor is in dark mode */
++  :root,
++  :root[data-theme="dark"] {
++    color-scheme: light !important;
++    background: #fff !important;
++  }
++  body {
++    background: #fff !important;
++    color: #000 !important;
++  }
++}
+diff --git a/app/layout.tsx b/app/layout.tsx
+index 7b485a1..0e31b05 100644
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -47,6 +47,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
+       <body className="min-h-full flex flex-col">
+         <CartProvider>{children}</CartProvider>
+         <DemoNotice />
++        {/* Empty on screen. The receipt is placed here, and it is the only thing printed (see globals.css) */}
++        <div id="print-root" />
+       </body>
+     </html>
+   );

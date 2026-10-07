@@ -14,7 +14,7 @@ export type ReceiptData = {
 
 const noopSubscribe = () => () => {};
 
-// eThe recipt is never seen on screen. It is placed inside <div id="print-root"> (see app/layout.tsx),
+// The receipt is never seen on screen. It is placed inside <div id="print-root"> (see app/layout.tsx),
 // which is hidden on screen and is the ONLY thing left visible when printing or saving as PDF (see globals.css).
 // Colors are fixed (not theme tokens) so the paper copy is the same in light and dark mode.
 export default function Receipt({ receipt }: { receipt: ReceiptData }) {
