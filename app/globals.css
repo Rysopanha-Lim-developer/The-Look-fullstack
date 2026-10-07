@@ -16,16 +16,10 @@
   --banner: #171717; /* sale banner */
   --banner-foreground: #FAFAF8;
   --on-light: #171717; /* text on surfaces that stay light in both themes (cart badge, banner button) */
-  --btn-text: #FFFFFF;
 
   /* product image box: one shared shape and panel color for every product photo */
   --image-panel: #ECECEA;
   --image-ratio: 1 / 1; /* change to 3 / 4 for a portrait box */
-
-  /* bg color */
-    --header-btn : rgb(0, 0, 0);
-    --header-btn-hover : rgb(31, 29, 29);
-    --header-btn-active : rgba(0, 0, 0, 0.7);
 }
 
 /* Dark theme. The visitor picks it with the header button; the script in app/layout.tsx sets data-theme before the first paint.
@@ -43,10 +37,6 @@
   --tile: #23221F;
   --banner: #2B2A27;
   --banner-foreground: #F2F0EB;
-  --btn-text: #171717;
-  --header-btn: #F2F0EB;
-  --header-btn-hover: #D9D6CE;
-  --header-btn-active: rgba(242, 240, 235, 0.7);
 }
 
 /* Lets Tailwind use dark: classes with our data-theme attribute instead of the device setting */
@@ -55,7 +45,6 @@
 @custom-variant sidebar-closed (html[data-sidebar="closed"] &);
 
 html, body{
-  scroll-snap-align: top;
   scroll-behavior: smooth;
 }
 body {
@@ -130,27 +119,6 @@ body {
     outline: none
   }
 
-  .nav-bar{
-    @apply flex justify-start items-center w-full
-  }
-  .nav-bar-ul{
-    @apply list-none flex items-center justify-evenly
-  }
-  .nav-link {
-    @apply inline-block relative no-underline font-black transition-all cursor-pointer;
-    font-family: var(--font-roboto);
-
-    /* The ::after underline animation */
-    &::after {
-      content: '';
-      @apply absolute w-full h-0.5 bottom-0 left-0 bg-foreground scale-x-0 origin-bottom-left transition-transform duration-250 ease-out;
-    }
-
-    /* The hover state */
-    &:hover::after {
-      @apply scale-x-100;
-    }
-  }
   /* the footer stays black in dark mode too, so a thin line keeps it apart from the page */
   :root[data-theme="dark"] .Footer {
     border-top: 1px solid var(--line);
@@ -180,23 +148,6 @@ body {
     aspect-ratio: var(--image-ratio);
     background-color: var(--image-panel);
   }
-
-  .btn {
-      @apply cursor-pointer px-1.75 py-1.5 font-semibold outline-none border-2 rounded-md flex items-center justify-center ;
-      font-family: var(--font-roboto);
-      background-color: var(--header-btn);
-      color: var(--btn-text);
-
-      a {
-        @apply no-underline ;
-      }
-      &:hover {
-        background-color: var(--header-btn-hover);
-      }
-      &:active {
-        background-color: var(--header-btn-active);
-      }
-    }
 }
 /* Receipt printing: #print-root holds the receipt (see Frontend/components/checkout/Receipt.tsx).
    Hidden on screen. When printing, everything else in <body> is removed so only the receipt is on the paper. */
