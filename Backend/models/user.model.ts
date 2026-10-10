@@ -1,4 +1,4 @@
-import {Schema, model, models, trusted} from "mongoose";
+import {Schema, model, models} from "mongoose";
 import bcrypt from "bcrypt";//This is for hashing password
 
 
@@ -34,8 +34,8 @@ const UserSchema = new Schema<User>(
             required: [true, 'Password is required'],
             unique: true,
             trim: true,
-            minlength:[8, "Password must be at lease 4 characters"], 
-            maxlength:[10, "Password must not exced 8 characters"],
+            minlength:[8, "Password must be at lease 8 characters"], 
+            maxlength:[10, "Password must not exced 10 characters"],
         },
         hashedCredential:{
             type: String,
