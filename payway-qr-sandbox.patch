@@ -1,0 +1,1161 @@
+diff --git a/Backend/lib/payway.ts b/Backend/lib/payway.ts
+new file mode 100644
+index 0000000..6cec797
+--- /dev/null
++++ b/Backend/lib/payway.ts
+@@ -0,0 +1,170 @@
++import "server-only"; // building this file into browser code is an error, so the API key can never leak to the client
++import { createHmac } from "crypto";
++import { HttpError } from "@/Backend/lib/errors";
++
++// All prices in the shop are in US dollars.
++export const PAYWAY_CURRENCY = "USD";
++
++type Config = { baseUrl: string; merchantId: string; apiKey: string };
++
++const SANDBOX_URL = "https://checkout-sandbox.payway.com.kh";
++const PRODUCTION_URL = "https://checkout.payway.com.kh";
++
++// PAYWAY_ENV=sandbox (the default) talks to PayWay's TEST server with your sandbox Merchant ID and API Key.
++// The sandbox needs no domain whitelist, and no real money moves. Only PAYWAY_ENV=production uses the live server.
++// Defaulting to sandbox means a forgotten variable can never start charging real customers.
++export const isSandbox = () => process.env.PAYWAY_ENV !== "production";
++
++// Read when a payment is attempted, NOT when the file is imported.
++// jwt.ts and dbConnection.ts throw at import time, which turns one missing variable into a 500 on every route that imports them.
++// Here a missing key only affects payment, and it answers 503 ("not available") instead of crashing.
++function getConfig(): Config {
++    const merchantId = process.env.PAYWAY_MERCHANT_ID;
++    const apiKey = process.env.PAYWAY_API_KEY;
++    if (!merchantId || !apiKey) {
++        console.error("[payway] PAYWAY_MERCHANT_ID or PAYWAY_API_KEY is not set");
++        throw new HttpError("Payment is not available right now.", 503);
++    }
++    const baseUrl = (process.env.PAYWAY_BASE_URL ?? (isSandbox() ? SANDBOX_URL : PRODUCTION_URL)).replace(/\/+$/, "");
++    return { merchantId, apiKey, baseUrl };
++}
++
++type Fields = Record<string, string | number | undefined>;
++
++// PayWay signs the VALUES, joined in the exact order its docs list them, with HMAC-SHA512 and your API key, as Base64.
++// Fields we do not send are skipped, so the hash always covers exactly what was posted.
++function sign(body: Fields, order: readonly string[], apiKey: string): string {
++    const text = order.filter((key) => body[key] !== undefined).map((key) => String(body[key])).join("");
++    return createHmac("sha512", apiKey).update(text).digest("base64");
++}
++
++// Order for the QR API (generate-qr). It was confirmed in the sandbox WITHOUT callback_url, return_deeplink,
++// custom_fields, return_params, payout and qr_image_template. The position of those is from PayWay's Purchase API;
++// if "Wrong Hash" appears right after turning one of them on, check that field's position first.
++const QR_HASH_ORDER = [
++    "req_time", "merchant_id", "tran_id", "amount", "items", "first_name", "last_name", "email", "phone",
++    "purchase_type", "payment_option", "callback_url", "return_deeplink", "currency", "custom_fields",
++    "return_params", "payout", "lifetime", "qr_image_template",
++] as const;
++
++const CHECK_HASH_ORDER = ["req_time", "merchant_id", "tran_id"] as const;
++
++// PayWay wants the current UTC time as YYYYMMDDHHmmss
++const reqTime = () => new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
++const base64 = (text: string) => Buffer.from(text).toString("base64");
++
++async function post<T>(path: string, body: object): Promise<T> {
++    const { baseUrl } = getConfig();
++    let response: Response;
++    try {
++        response = await fetch(`${baseUrl}/api/payment-gateway/v1/payments/${path}`, {
++            method: "POST",
++            headers: { "Content-Type": "application/json" },
++            body: JSON.stringify(body),
++            signal: AbortSignal.timeout(10_000), // never leave a customer waiting on a bank that does not answer
++            cache: "no-store",
++        });
++    } catch (error) {
++        console.error(`[payway] ${path}: could not reach PayWay`, error);
++        throw new HttpError("The payment service could not be reached. Please try again.", 502);
++    }
++    const json = (await response.json().catch(() => null)) as T | null;
++    if (!json) {
++        console.error(`[payway] ${path}: unreadable answer (HTTP ${response.status})`);
++        throw new HttpError("The payment service sent an unreadable answer.", 502);
++    }
++    return json;
++}
++
++// ---------- 1. Create the QR code ----------
++
++export type QrInput = {
++    tranId: string;
++    amount: number;
++    items: { name: string; quantity: number; price: number }[];
++    customer: { firstName: string; lastName: string; email: string; phone: string };
++    lifetimeMinutes: number;
++};
++
++export type QrResult = { qrString: string; qrImage: string; deeplink: string };
++
++type QrResponse = {
++    qrString?: string;
++    qrImage?: string;
++    abapay_deeplink?: string;
++    status?: { code?: string; message?: string; trace_id?: string };
++};
++
++export async function generateQr(input: QrInput): Promise<QrResult> {
++    const { merchantId, apiKey } = getConfig();
++
++    const body: Fields = {
++        req_time: reqTime(),
++        merchant_id: merchantId,
++        tran_id: input.tranId,
++        amount: input.amount.toFixed(2), // the same text goes into the hash and the request, so "5.50" never becomes "5.5"
++        items: base64(JSON.stringify(input.items)),
++        first_name: input.customer.firstName,
++        last_name: input.customer.lastName,
++        email: input.customer.email,
++        phone: input.customer.phone.replace(/[^0-9+]/g, ""),
++        purchase_type: "purchase",
++        payment_option: "abapay_khqr",
++        currency: PAYWAY_CURRENCY,
++        lifetime: input.lifetimeMinutes,
++    };
++
++    // PayWay can call us back when someone pays, but only for domains the bank has whitelisted.
++    // Sandbox testing does not need it: leave PAYWAY_USE_CALLBACK unset and the status endpoint asks PayWay
++    // directly (Check Transaction API), so payments are still noticed.
++    if (process.env.PAYWAY_USE_CALLBACK === "true") {
++        const appUrl = (process.env.APP_BASE_URL ?? "https://thelook.rysopanha.com").replace(/\/+$/, "");
++        body.callback_url = base64(`${appUrl}/api/payway/callback`);
++    }
++
++    const answer = await post<QrResponse>("generate-qr", { ...body, hash: sign(body, QR_HASH_ORDER, apiKey) });
++
++    const code = answer.status?.code;
++    if ((code !== "0" && code !== "00") || !answer.qrString || !answer.qrImage || !answer.abapay_deeplink) {
++        console.error("[payway] generate-qr refused:", { code, message: answer.status?.message, trace_id: answer.status?.trace_id });
++        throw new HttpError("We could not create the payment code. Please try again.", 502);
++    }
++    return { qrString: answer.qrString, qrImage: answer.qrImage, deeplink: answer.abapay_deeplink };
++}
++
++// ---------- 2. Ask PayWay what happened to a payment ----------
++
++export type CheckResult = {
++    state: "approved" | "pending" | "declined" | "not_found" | "other";
++    amount?: number;
++    currency?: string;
++    apv?: string;
++};
++
++type CheckResponse = {
++    data?: { payment_status?: string; payment_amount?: number; total_amount?: number; payment_currency?: string; apv?: string };
++    status?: { code?: string; message?: string };
++};
++
++export async function checkTransaction(tranId: string): Promise<CheckResult> {
++    const { merchantId, apiKey } = getConfig();
++    const body: Fields = { req_time: reqTime(), merchant_id: merchantId, tran_id: tranId };
++    const answer = await post<CheckResponse>("check-transaction-2", { ...body, hash: sign(body, CHECK_HASH_ORDER, apiKey) });
++
++    const code = answer.status?.code;
++    // "6" = transaction not found. That is normal while nobody has scanned the QR code yet.
++    if (code === "6" || code === "06") return { state: "not_found" };
++    if (code !== "0" && code !== "00") {
++        console.error("[payway] check-transaction refused:", { code, message: answer.status?.message });
++        throw new HttpError("Could not check the payment.", 502);
++    }
++
++    const data = answer.data;
++    const status = String(data?.payment_status ?? "").toUpperCase();
++    const state: CheckResult["state"] =
++        status === "APPROVED" ? "approved"
++        : status === "PENDING" ? "pending"
++        : status === "DECLINED" || status === "CANCELLED" ? "declined"
++        : "other";
++    return { state, amount: data?.payment_amount ?? data?.total_amount, currency: data?.payment_currency, apv: data?.apv };
++}
+diff --git a/Backend/lib/routeError.ts b/Backend/lib/routeError.ts
+new file mode 100644
+index 0000000..7a49c38
+--- /dev/null
++++ b/Backend/lib/routeError.ts
+@@ -0,0 +1,13 @@
++import { NextResponse } from "next/server";
++import { HttpError } from "@/Backend/lib/errors";
++
++// One place that turns an error into an HTTP answer for the payment routes.
++// Expected problems (HttpError) keep their message and status. Anything else is logged in full
++// (see the terminal, or Vercel > Logs) and the customer only gets a generic message.
++export function routeError(error: unknown, label: string) {
++    if (error instanceof HttpError) {
++        return NextResponse.json({ message: error.message }, { status: error.status });
++    }
++    console.error(`[${label}] unexpected error:`, error);
++    return NextResponse.json({ message: "Something went wrong on our side." }, { status: 500 });
++}
+diff --git a/Backend/models/order.model.ts b/Backend/models/order.model.ts
+index 2be55ec..4095e2e 100644
+--- a/Backend/models/order.model.ts
++++ b/Backend/models/order.model.ts
+@@ -7,11 +7,35 @@ export type OrderItem = {
+     quantity?: number;
+ };
+ 
++// "pending"  = QR created, waiting for the customer to pay
++// "paid"     = PayWay confirmed the payment (always verified with the Check Transaction API)
++// "expired"  = nobody paid before the QR code ran out
++// "failed"   = PayWay declined it, or we could not create the QR code
++// Orders made before online payment existed have NO status. Treat a missing status as "paid" (the old demo flow).
++export const ORDER_STATUSES = ["pending", "paid", "expired", "failed"] as const;
++export type OrderStatus = (typeof ORDER_STATUSES)[number];
++
++export type OrderPayment = {
++    provider: "payway";
++    tranId: string; // the id we send to PayWay (max 20 characters)
++    amount: number; // what we asked for, calculated on the server
++    currency: string;
++    qrString?: string; // removed again once the order is no longer pending
++    qrImage?: string;
++    deeplink?: string;
++    expiresAt?: Date;
++    lastCheckedAt?: Date; // stops the status endpoint from asking PayWay more than once every few seconds
++    paidAt?: Date;
++    apv?: string; // approval code from PayWay
++};
++
+ export type Order = {
+     _id: string;
+     accountId: Types.ObjectId;
+     userPersonalInfo: UserPersonalInfo;
+     orderItems: OrderItem[];
++    status?: OrderStatus;
++    payment?: OrderPayment;
+     createdAt:Date
+ };
+ 
+@@ -26,6 +50,21 @@ const OrderSchema = new Schema<Order>(
+                 quantity: { type: Number, required: true, default: 1 },
+             },
+         ],
++        // No default on purpose: a default would silently mark a forgotten order as "paid" or "pending".
++        status: { type: String, enum: ORDER_STATUSES },
++        payment: {
++            provider: { type: String, enum: ["payway"] },
++            tranId: String,
++            amount: Number,
++            currency: String,
++            qrString: String,
++            qrImage: String,
++            deeplink: String,
++            expiresAt: Date,
++            lastCheckedAt: Date,
++            paidAt: Date,
++            apv: String,
++        },
+     },
+     { 
+         timestamps: true 
+@@ -33,5 +72,13 @@ const OrderSchema = new Schema<Order>(
+ );
+ OrderSchema.index({ accountId: 1, createdAt: -1 });
+ 
++// Each tranId must be unique, but only orders that HAVE one are checked.
++// A plain `unique: true` would treat every old order (no tranId) as "null" and reject the second one,
++// the same problem as the old hashedCrediential index on users. partialFilterExpression avoids that.
++OrderSchema.index(
++    { "payment.tranId": 1 },
++    { unique: true, partialFilterExpression: { "payment.tranId": { $type: "string" } } },
++);
++
+ 
+-export const OrderModel = models.OrderModel || model("OrderModel", OrderSchema, "orders")
+\ No newline at end of file
++export const OrderModel = models.OrderModel || model("OrderModel", OrderSchema, "orders")
+diff --git a/Backend/services/ConfirmPaywayPayment.ts b/Backend/services/ConfirmPaywayPayment.ts
+new file mode 100644
+index 0000000..2408d52
+--- /dev/null
++++ b/Backend/services/ConfirmPaywayPayment.ts
+@@ -0,0 +1,52 @@
++import { dbConnection } from "@/Backend/lib/dbConnection";
++import { OrderModel, type Order } from "@/Backend/models/order.model";
++import { checkTransaction, type CheckResult } from "@/Backend/lib/payway";
++
++export type PaymentOutcome = "paid" | "pending" | "declined" | "unknown-order";
++
++// An approved payment only counts if it is for the amount and currency WE asked for.
++export function paymentMatches(expected: { amount: number; currency: string }, check: CheckResult): boolean {
++    return (
++        check.amount !== undefined &&
++        Math.abs(check.amount - expected.amount) < 0.005 &&
++        (check.currency === undefined || check.currency === expected.currency)
++    );
++}
++
++// The one place an order becomes "paid". Used by BOTH the status endpoint (polling) and the callback.
++// Never trusts what the browser or the callback body says: it asks PayWay directly (Check Transaction API).
++export async function ConfirmPaywayPayment(tranId: string): Promise<PaymentOutcome> {
++    await dbConnection();
++    const order: Order | null = await OrderModel.findOne({ "payment.tranId": tranId }).lean();
++    if (!order || !order.payment) return "unknown-order";
++    if (order.status === "paid") return "paid";
++
++    const check = await checkTransaction(tranId);
++
++    if (check.state === "approved") {
++        if (!paymentMatches(order.payment, check)) {
++            // Money arrived but not the amount we expected. Do not mark it paid; a person must look at it.
++            console.error("[payway] approved payment does not match the order", {
++                tranId, expected: order.payment.amount, got: check.amount, currency: check.currency,
++            });
++            return "pending";
++        }
++        // The status filter makes this safe to run twice (two callbacks, or a callback and a poll at once):
++        // only the first one finds a pending/expired order. An order that ran out of time is still paid if the money did arrive.
++        await OrderModel.updateOne(
++            { _id: order._id, status: { $in: ["pending", "expired"] } },
++            {
++                $set: { status: "paid", "payment.paidAt": new Date(), ...(check.apv ? { "payment.apv": check.apv } : {}) },
++                $unset: { "payment.qrString": "", "payment.qrImage": "", "payment.deeplink": "" },
++            },
++        );
++        return "paid";
++    }
++
++    if (check.state === "declined") {
++        await OrderModel.updateOne({ _id: order._id, status: "pending" }, { $set: { status: "failed" } });
++        return "declined";
++    }
++
++    return "pending";
++}
+diff --git a/Backend/services/CreateOrder.ts b/Backend/services/CreateOrder.ts
+index 6f66653..b5d9042 100644
+--- a/Backend/services/CreateOrder.ts
++++ b/Backend/services/CreateOrder.ts
+@@ -1,13 +1,11 @@
+ import { dbConnection } from "@/Backend/lib/dbConnection";
+ import { OrderItem, OrderModel } from "@/Backend/models/order.model";
+-import { UserModel, User } from "@/Backend/models/user.model";
+ import { Product, ProductModel } from "@/Backend/models/product.model";
+-import { cookies } from "next/headers";
+ import { HttpError } from "@/Backend/lib/errors";
+-import { jwtPayload, verifyAccessToken } from "@/Backend/lib/jwt";
++import { GetCurrentAccount } from "@/Backend/services/CurrentAccount";
+ import z from "zod";
+ 
+-type CreateOrderPayload = {
++export type CreateOrderPayload = {
+     items: Product[];
+     userPersonalInfo: unknown; // type this properly once you have a shape for it
+ }
+@@ -26,16 +24,17 @@ const personalInfoSchema = z.object({
+     email: z.email(),
+ });
+ 
+-async function GetRealPrices(items: Product[]) {
++async function GetRealProducts(items: Product[]) {
+     const ids = items.map((item) => item._id);
+     //prevent N+1 look up to db
+     const products:Product[] = await ProductModel.find({ _id: { $in: ids } });
+     
+-    const priceMap = new Map(products.map((p) => [p._id.toString(), p.price]));
+-    return priceMap;
++    return new Map(products.map((p) => [p._id.toString(), p]));
+ }
+ 
+-export async function CreateOrder({items, userPersonalInfo:rawPersonalInfo}:CreateOrderPayload) {
++// Everything both ways of ordering (the old "place order" and the ABA QR payment) must do first:
++// check the delivery details, find out who is signed in, and take every price from the database (never from the browser).
++export async function PrepareOrder({items, userPersonalInfo:rawPersonalInfo}:CreateOrderPayload) {
+     //userPersonalInfo:rawPersonalInfo this part is renaming userPersonalInfo to get a local variable for using with zod, to prevent changing userPersonalInfo at multiple place
+     const checked = personalInfoSchema.safeParse(rawPersonalInfo);
+     if(!checked.success){
+@@ -44,39 +43,27 @@ export async function CreateOrder({items, userPersonalInfo:rawPersonalInfo}:Crea
+     const userPersonalInfo = checked.data;
+     await dbConnection();
+ 
+-    const cookiesSession = await cookies();
+-    const token = cookiesSession.get("access_token")!.value;
+-    if(!token){
+-        throw new HttpError("Pleas login to your account before purchase.", 500)
+-    };
+-    const payload: jwtPayload= await verifyAccessToken(token)
+-    
+-    const cookiesData:{username: string, email:string} = {
+-        username : payload.username,
+-        email : payload.email
+-    }
+-
+-    const userAccount:User = await UserModel.findOne({"username": cookiesData.username}).lean()
+-    if(!userAccount){
+-        throw new HttpError("Cannot find your account.", 401);
+-    }
+-
+-    const accountId = userAccount._id
+-    const priceMap = await GetRealPrices(items);
++    const { accountId, cookiesData } = await GetCurrentAccount();
++    const productMap = await GetRealProducts(items);
+ 
+     const orderItems: OrderItem[] = items.map((item: Product) => {
+-        const priceAtPurchase = priceMap.get(item._id.toString());
+-        if (priceAtPurchase === undefined) {
++        const product = productMap.get(item._id.toString());
++        if (product === undefined) {
+             throw new HttpError(`Product ${item._id} not found`, 404);
+         }
+         return {
+             productId: item._id,
+-            priceAtPurchase,
++            priceAtPurchase: product.price,
+         };
+     });
+-    
++
++    return { accountId, userPersonalInfo, cookiesData, orderItems, productMap };
++}
++
++export async function CreateOrder(payload:CreateOrderPayload) {
++    const { accountId, userPersonalInfo, cookiesData, orderItems } = await PrepareOrder(payload);
+ 
+     const orderData = await OrderModel.create({accountId, userPersonalInfo, orderItems})
+-    return { items, userPersonalInfo, cookiesData, orderItems, orderId: orderData._id.toString(), createdAt: orderData.createdAt };
++    return { items: payload.items, userPersonalInfo, cookiesData, orderItems, orderId: orderData._id.toString(), createdAt: orderData.createdAt };
+ 
+ }
+diff --git a/Backend/services/CreatePaywayPayment.ts b/Backend/services/CreatePaywayPayment.ts
+new file mode 100644
+index 0000000..33dbf95
+--- /dev/null
++++ b/Backend/services/CreatePaywayPayment.ts
+@@ -0,0 +1,75 @@
++import z from "zod";
++import { OrderModel } from "@/Backend/models/order.model";
++import { HttpError } from "@/Backend/lib/errors";
++import { generateQr, PAYWAY_CURRENCY } from "@/Backend/lib/payway";
++import { PrepareOrder, type CreateOrderPayload } from "@/Backend/services/CreateOrder";
++
++const QR_LIFETIME_MINUTES = 10;
++
++const itemsSchema = z.array(z.object({ _id: z.string().min(1) })).min(1).max(50);
++
++// A new id for every payment attempt (PayWay allows up to 20 characters): the time in ms plus 3 random digits.
++const newTranId = () => `${Date.now()}${Math.floor(100 + Math.random() * 900)}`;
++
++const round2 = (value: number) => Math.round(value * 100) / 100;
++
++// Creates a PENDING order, asks PayWay for a QR code and returns what the payment page needs.
++// The amount always comes from the database prices (PrepareOrder), never from the browser.
++export async function CreatePaywayPayment(payload: CreateOrderPayload) {
++    if (!itemsSchema.safeParse(payload?.items).success) {
++        throw new HttpError("Please complete your delivery details and cart", 400);
++    }
++    const { accountId, userPersonalInfo, orderItems, productMap } = await PrepareOrder(payload);
++
++    const amount = round2(orderItems.reduce((sum, item) => sum + item.priceAtPurchase * (item.quantity ?? 1), 0));
++    if (!(amount > 0)) {
++        throw new HttpError("The order total must be more than zero.", 400);
++    }
++
++    // One open QR code per customer: close any older unpaid ones.
++    // (If one of them is paid later anyway, ConfirmPaywayPayment still accepts it.)
++    await OrderModel.updateMany(
++        { accountId, status: "pending" },
++        { $set: { status: "expired" }, $unset: { "payment.qrString": "", "payment.qrImage": "", "payment.deeplink": "" } },
++    );
++
++    const tranId = newTranId();
++    const order = await OrderModel.create({
++        accountId,
++        userPersonalInfo,
++        orderItems,
++        status: "pending",
++        payment: { provider: "payway", tranId, amount, currency: PAYWAY_CURRENCY },
++    });
++
++    try {
++        const qr = await generateQr({
++            tranId,
++            amount,
++            items: orderItems.map((item) => ({
++                name: (productMap.get(String(item.productId))?.name ?? "Item").slice(0, 60),
++                quantity: item.quantity ?? 1,
++                price: item.priceAtPurchase,
++            })),
++            customer: {
++                firstName: userPersonalInfo.firstname,
++                lastName: userPersonalInfo.lastname,
++                email: userPersonalInfo.email,
++                phone: userPersonalInfo.telephone,
++            },
++            lifetimeMinutes: QR_LIFETIME_MINUTES,
++        });
++
++        const expiresAt = new Date(Date.now() + QR_LIFETIME_MINUTES * 60_000);
++        await OrderModel.updateOne(
++            { _id: order._id },
++            { $set: { "payment.qrString": qr.qrString, "payment.qrImage": qr.qrImage, "payment.deeplink": qr.deeplink, "payment.expiresAt": expiresAt } },
++        );
++    } catch (error) {
++        // No QR code means nothing can be paid, so do not leave a "pending" order behind.
++        await OrderModel.updateOne({ _id: order._id }, { $set: { status: "failed" } });
++        throw error;
++    }
++
++    return { orderId: String(order._id) };
++}
+diff --git a/Backend/services/CurrentAccount.ts b/Backend/services/CurrentAccount.ts
+new file mode 100644
+index 0000000..2f408ec
+--- /dev/null
++++ b/Backend/services/CurrentAccount.ts
+@@ -0,0 +1,34 @@
++import { cookies } from "next/headers";
++import { dbConnection } from "@/Backend/lib/dbConnection";
++import { HttpError } from "@/Backend/lib/errors";
++import { jwtPayload, verifyAccessToken } from "@/Backend/lib/jwt";
++import { UserModel, User } from "@/Backend/models/user.model";
++
++// Who is signed in? Reads the access_token cookie and finds the account.
++// Anything wrong with the session is a 401 (not a 500), so the page can say "sign in again".
++export async function GetCurrentAccount() {
++    await dbConnection();
++
++    const cookiesSession = await cookies();
++    const token = cookiesSession.get("access_token")?.value;
++    if (!token) {
++        throw new HttpError("Please sign in to your account first.", 401);
++    }
++
++    let payload: jwtPayload;
++    try {
++        payload = await verifyAccessToken(token);
++    } catch {
++        throw new HttpError("Your session has expired. Please sign in again.", 401);
++    }
++
++    const userAccount: User | null = await UserModel.findOne({ username: payload.username }).lean();
++    if (!userAccount) {
++        throw new HttpError("Cannot find your account.", 401);
++    }
++
++    return {
++        accountId: userAccount._id as string,
++        cookiesData: { username: payload.username, email: payload.email },
++    };
++}
+diff --git a/Backend/services/GetPaywayStatus.ts b/Backend/services/GetPaywayStatus.ts
+new file mode 100644
+index 0000000..f4e9d1a
+--- /dev/null
++++ b/Backend/services/GetPaywayStatus.ts
+@@ -0,0 +1,99 @@
++import { Types } from "mongoose";
++import { HttpError } from "@/Backend/lib/errors";
++import { OrderModel, type Order, type OrderStatus } from "@/Backend/models/order.model";
++import { ProductModel, type Product } from "@/Backend/models/product.model";
++import { GetCurrentAccount } from "@/Backend/services/CurrentAccount";
++import { ConfirmPaywayPayment } from "@/Backend/services/ConfirmPaywayPayment";
++import { isSandbox } from "@/Backend/lib/payway";
++
++const MIN_MS_BETWEEN_PAYWAY_CHECKS = 3000;
++const GRACE_MS_AFTER_EXPIRY = 30_000; // PayWay and our clock may differ a little; also lets a last-second payment arrive
++
++export type PaymentStatus = {
++    orderId: string;
++    status: OrderStatus;
++    amount: number;
++    currency: string;
++    testMode: boolean; // true on the PayWay sandbox: the page says so, because no real money moves
++    expiresAt?: string;
++    // only while pending
++    qrImage?: string;
++    qrString?: string;
++    deeplink?: string;
++    // only when paid: everything the receipt needs
++    receipt?: {
++        createdAt: string;
++        paidAt?: string;
++        info: Order["userPersonalInfo"];
++        items: { name: string; color?: string; price: number }[];
++        total: number;
++    };
++};
++
++// What the payment page asks every few seconds. The signed-in customer can only see THEIR OWN orders.
++export async function GetPaywayStatus(orderId: string): Promise<PaymentStatus> {
++    const { accountId } = await GetCurrentAccount();
++    if (!Types.ObjectId.isValid(orderId)) throw new HttpError("Order not found.", 404);
++
++    const load = (): Promise<Order | null> => OrderModel.findOne({ _id: orderId, accountId }).lean();
++    let order = await load();
++    if (!order || !order.payment?.tranId) throw new HttpError("Order not found.", 404);
++
++    if (order.status === "pending") {
++        const lastChecked = order.payment.lastCheckedAt ? new Date(order.payment.lastCheckedAt).getTime() : 0;
++        if (Date.now() - lastChecked >= MIN_MS_BETWEEN_PAYWAY_CHECKS) {
++            await OrderModel.updateOne({ _id: orderId }, { $set: { "payment.lastCheckedAt": new Date() } });
++            try {
++                await ConfirmPaywayPayment(order.payment.tranId);
++            } catch (error) {
++                // PayWay being slow or down must not break the page: keep showing "waiting" and try again on the next poll
++                console.error("[payway] status check failed:", error);
++            }
++            order = (await load()) ?? order;
++        }
++
++        const expiresAt = order.payment?.expiresAt ? new Date(order.payment.expiresAt).getTime() : 0;
++        if (order.status === "pending" && expiresAt && Date.now() > expiresAt + GRACE_MS_AFTER_EXPIRY) {
++            await OrderModel.updateOne(
++                { _id: orderId, status: "pending" },
++                { $set: { status: "expired" }, $unset: { "payment.qrString": "", "payment.qrImage": "", "payment.deeplink": "" } },
++            );
++            order = (await load()) ?? order;
++        }
++    }
++
++    const payment = order.payment!;
++    const status: OrderStatus = order.status ?? "pending";
++    const result: PaymentStatus = {
++        orderId: String(order._id),
++        status,
++        amount: payment.amount,
++        currency: payment.currency,
++        testMode: isSandbox(),
++        expiresAt: payment.expiresAt ? new Date(payment.expiresAt).toISOString() : undefined,
++    };
++
++    if (status === "pending") {
++        result.qrImage = payment.qrImage;
++        result.qrString = payment.qrString;
++        result.deeplink = payment.deeplink;
++    }
++
++    if (status === "paid") {
++        const ids = order.orderItems.map((item) => item.productId);
++        const products: Product[] = await ProductModel.find({ _id: { $in: ids } }).lean();
++        const byId = new Map(products.map((p) => [String(p._id), p]));
++        result.receipt = {
++            createdAt: new Date(order.createdAt).toISOString(),
++            paidAt: payment.paidAt ? new Date(payment.paidAt).toISOString() : undefined,
++            info: order.userPersonalInfo,
++            items: order.orderItems.map((item) => {
++                const product = byId.get(String(item.productId));
++                return { name: product?.name ?? "Item", color: product?.color, price: item.priceAtPurchase };
++            }),
++            total: payment.amount,
++        };
++    }
++
++    return result;
++}
+diff --git a/Frontend/components/checkout/PaywayPayment.tsx b/Frontend/components/checkout/PaywayPayment.tsx
+new file mode 100644
+index 0000000..3667f5f
+--- /dev/null
++++ b/Frontend/components/checkout/PaywayPayment.tsx
+@@ -0,0 +1,221 @@
++"use client";
++import Link from "next/link";
++import { useEffect, useRef, useState } from "react";
++import { CircleCheck, Printer, Smartphone } from "lucide-react";
++import { useCart } from "@/Frontend/hooks/CartContext";
++import { CHECKOUT_PATH } from "@/Frontend/lib/personalInfo";
++import { money } from "@/Frontend/lib/money";
++import { printReceipt } from "@/Frontend/lib/printReceipt";
++import Receipt, { type ReceiptData } from "@/Frontend/components/checkout/Receipt";
++import type { PaymentStatus } from "@/Backend/services/GetPaywayStatus";
++
++const POLL_MS = 4000;
++
++type Problem = "signed-out" | "not-found" | "network" | null;
++
++const primaryButton = "mt-5 flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-full bg-foreground px-8 text-sm font-medium text-background";
++const secondaryButton = "mt-2 flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-full border border-foreground px-8 text-sm font-medium";
++
++// shown on the PayWay sandbox so nobody thinks real money is moving
++const TestModeNote = () => (
++    <p className="m-0 mb-4 rounded-full bg-chip px-4 py-1 text-xs font-medium">Test mode: no real money is taken</p>
++);
++
++const clock = (totalSeconds: number) =>
++    `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}`;
++
++// The QR payment page. It never decides anything itself: it asks the server (/api/payway/status) every few seconds,
++// and the server asks PayWay. The page only shows what the server says.
++export default function PaywayPayment({ orderId }: { orderId: string }) {
++    const { clearCart } = useCart();
++    const [payment, setPayment] = useState<PaymentStatus | null>(null);
++    const [problem, setProblem] = useState<Problem>(null);
++    const [now, setNow] = useState<number | null>(null);
++    const cartCleared = useRef(false);
++
++    // Ask for the status now and then every few seconds. Stops by itself once the payment is paid, expired or failed.
++    useEffect(() => {
++        let stopped = false;
++        let timer: ReturnType<typeof setTimeout> | undefined;
++        const controller = new AbortController();
++
++        async function poll() {
++            try {
++                const res = await fetch(`/api/payway/status?orderId=${encodeURIComponent(orderId)}`, {
++                    cache: "no-store",
++                    signal: controller.signal,
++                });
++                if (stopped) return;
++                if (res.ok) {
++                    const data = (await res.json()) as PaymentStatus;
++                    if (stopped) return;
++                    setPayment(data);
++                    setProblem(null);
++                    if (data.status !== "pending") return; // a final answer: no more asking
++                } else if (res.status === 401) {
++                    setProblem("signed-out");
++                    return;
++                } else if (res.status === 404) {
++                    setProblem("not-found");
++                    return;
++                } else {
++                    setProblem("network");
++                }
++            } catch {
++                if (stopped) return;
++                setProblem("network");
++            }
++            timer = setTimeout(poll, POLL_MS);
++        }
++        poll();
++
++        return () => {
++            stopped = true;
++            controller.abort();
++            clearTimeout(timer);
++        };
++    }, [orderId]);
++
++    // One-second clock for the countdown (only while a QR code is on screen)
++    const waiting = payment?.status === "pending";
++    useEffect(() => {
++        if (!waiting) return;
++        const tick = () => setNow(Date.now());
++        const first = setTimeout(tick, 0);
++        const every = setInterval(tick, 1000);
++        return () => {
++            clearTimeout(first);
++            clearInterval(every);
++        };
++    }, [waiting]);
++
++    // The cart is emptied only when the payment is really confirmed (and only once)
++    const paid = payment?.status === "paid";
++    useEffect(() => {
++        if (paid && !cartCleared.current) {
++            cartCleared.current = true;
++            clearCart();
++        }
++    }, [paid, clearCart]);
++
++    const payPath = `${CHECKOUT_PATH}/pay/${orderId}`;
++    const wrapper = "mx-auto flex w-full max-w-md flex-col items-center px-4 pb-10 pt-6 text-center";
++
++    // ---- the page could not load the payment at all ----
++    if (problem === "signed-out") {
++        return (
++            <div className={wrapper}>
++                <h1 className="m-0 text-2xl font-medium">Sign in to see this payment</h1>
++                <p className="m-0 mt-2 text-sm text-muted">Your session may have expired.</p>
++                <Link href={`/login?next=${encodeURIComponent(payPath)}`} className={primaryButton}>Sign in</Link>
++            </div>
++        );
++    }
++    if (problem === "not-found") {
++        return (
++            <div className={wrapper}>
++                <h1 className="m-0 text-2xl font-medium">We could not find this payment</h1>
++                <Link href="/account/order" className={primaryButton}>View my orders</Link>
++            </div>
++        );
++    }
++    if (!payment) {
++        return (
++            <div role="status" className={`${wrapper} animate-pulse`}>
++                <span className="sr-only">Loading payment</span>
++                <div className="h-8 w-40 rounded bg-chip" />
++                <div className="mt-6 aspect-square w-full max-w-72 rounded-2xl bg-chip" />
++                {problem === "network" && <p className="m-0 mt-4 text-sm text-muted">Trying to reach the server...</p>}
++            </div>
++        );
++    }
++
++    // ---- paid ----
++    if (payment.status === "paid") {
++        const receipt: ReceiptData | null = payment.receipt
++            ? { orderId: payment.orderId, ...payment.receipt, paymentLabel: "Paid with ABA KHQR" }
++            : null;
++        return (
++            <div className={wrapper}>
++                {payment.testMode && <TestModeNote />}
++                <CircleCheck size={40} aria-hidden="true" />
++                <h1 className="m-0 mt-3 text-2xl font-medium">Payment received</h1>
++                <p className="m-0 mt-2 max-w-sm text-sm text-muted">Thank you! Your order {money(payment.amount)} is paid.</p>
++                <Link href="/account/order" className={primaryButton}>View my orders</Link>
++                {receipt && (
++                    <button type="button" onClick={() => printReceipt(receipt.orderId)} className={secondaryButton}>
++                        <Printer size={18} aria-hidden="true" />
++                        Print or save receipt
++                    </button>
++                )}
++                <Link href="/" className="mt-2 flex h-12 items-center px-6 text-sm text-muted underline">Keep shopping</Link>
++                {receipt && <Receipt receipt={receipt} />}
++            </div>
++        );
++    }
++
++    // ---- expired or failed: nothing was charged, start again from checkout ----
++    if (payment.status === "expired" || payment.status === "failed") {
++        return (
++            <div className={wrapper}>
++                <h1 className="m-0 text-2xl font-medium">
++                    {payment.status === "expired" ? "This QR code has expired" : "The payment did not go through"}
++                </h1>
++                <p className="m-0 mt-2 max-w-sm text-sm text-muted">
++                    Nothing was charged. Go back to checkout to create a new code.
++                </p>
++                <Link href={CHECKOUT_PATH} className={primaryButton}>Back to checkout</Link>
++            </div>
++        );
++    }
++
++    // ---- pending: show the QR code ----
++    const secondsLeft = now !== null && payment.expiresAt
++        ? Math.max(0, Math.round((new Date(payment.expiresAt).getTime() - now) / 1000))
++        : null;
++
++    return (
++        <div className={wrapper}>
++            {payment.testMode && <TestModeNote />}
++            <h1 className="m-0 text-2xl font-medium">Scan to pay</h1>
++            <p className="m-0 mt-1 text-sm text-muted">Total <strong className="font-medium text-foreground">{money(payment.amount)}</strong></p>
++
++            {/* the QR code always sits on a white panel: it must stay light in dark mode or phones cannot read it */}
++            <div className="mt-5 w-full max-w-72 rounded-2xl bg-white p-3">
++                {payment.qrImage ? (
++                    // a base64 image straight from PayWay, so next/image has nothing to optimise
++                    // eslint-disable-next-line @next/next/no-img-element
++                    <img src={payment.qrImage} alt={`ABA KHQR code to pay ${money(payment.amount)}`} className="block h-auto w-full" />
++                ) : (
++                    <p className="m-0 p-8 text-sm text-black">The QR code is not available. Go back to checkout and try again.</p>
++                )}
++            </div>
++
++            <p role="status" className="m-0 mt-4 text-sm">
++                Waiting for your payment...
++                {secondsLeft !== null && (
++                    <span className="block text-muted">
++                        {secondsLeft > 0 ? `This code expires in ${clock(secondsLeft)}` : "Time is up. Checking for a last-second payment..."}
++                    </span>
++                )}
++                {problem === "network" && <span className="block text-muted">Connection problem, trying again...</span>}
++            </p>
++
++            {/* a phone cannot scan its own screen, so phones get a button that opens ABA Mobile directly */}
++            {payment.deeplink && (
++                <a href={payment.deeplink} className={`${primaryButton} md:hidden`}>
++                    <Smartphone size={18} aria-hidden="true" />
++                    Open ABA Mobile
++                </a>
++            )}
++
++            <ol className="m-0 mt-6 list-none space-y-1 p-0 text-sm text-muted">
++                <li>1. Open ABA Mobile or any KHQR banking app.</li>
++                <li>2. Scan this code and confirm the payment.</li>
++                <li>3. Stay on this page. It updates by itself.</li>
++            </ol>
++
++            <Link href={CHECKOUT_PATH} className="mt-4 flex min-h-11 items-center px-4 text-sm text-muted underline">Cancel and go back</Link>
++        </div>
++    );
++}
+diff --git a/Frontend/components/checkout/Receipt.tsx b/Frontend/components/checkout/Receipt.tsx
+index 8a411cb..c97e3c0 100644
+--- a/Frontend/components/checkout/Receipt.tsx
++++ b/Frontend/components/checkout/Receipt.tsx
+@@ -10,6 +10,7 @@ export type ReceiptData = {
+     info: UserPersonalInfo;
+     items: { name: string; color?: string; price: number }[];
+     total: number;
++    paymentLabel?: string; // e.g. "Paid with ABA KHQR"; shown under the date when the order was paid online
+ };
+ 
+ const noopSubscribe = () => () => {};
+@@ -41,6 +42,7 @@ export default function Receipt({ receipt }: { receipt: ReceiptData }) {
+                 <div>
+                     {receipt.orderId && <p className="m-0 font-medium">Order #{receipt.orderId.slice(-6).toUpperCase()}</p>}
+                     <p className="m-0">{date} (Phnom Penh time)</p>
++                    {receipt.paymentLabel && <p className="m-0">{receipt.paymentLabel}</p>}
+                 </div>
+                 <div className="text-right">
+                     <p className="m-0 font-medium">Delivery details</p>
+diff --git a/Frontend/components/product/OrderDisplayCard/OrderDisplayCard.tsx b/Frontend/components/product/OrderDisplayCard/OrderDisplayCard.tsx
+index a95d283..209943a 100644
+--- a/Frontend/components/product/OrderDisplayCard/OrderDisplayCard.tsx
++++ b/Frontend/components/product/OrderDisplayCard/OrderDisplayCard.tsx
+@@ -1,6 +1,15 @@
++import Link from "next/link"
+ import { Order } from "@/Backend/models/order.model"
+ import { money } from "@/Frontend/lib/money"
+ 
++// Orders made before online payment existed have no status, so they show no label.
++const STATUS_LABEL: Record<NonNullable<Order["status"]>, string> = {
++    pending: "Awaiting payment",
++    paid: "Paid",
++    expired: "Expired",
++    failed: "Payment failed",
++};
++
+ export default function OrderDisplayCard({props}:{props: Order[]}){
+     return(
+         <ul className="m-0 grid list-none grid-cols-1 gap-3 p-0 md:grid-cols-2">
+@@ -26,6 +35,14 @@ export default function OrderDisplayCard({props}:{props: Order[]}){
+                         <p className="m-0 mt-1 text-muted">{formattedDate}</p>
+                         <p className="m-0 text-muted">{itemCount} {itemCount === 1 ? "item" : "items"}</p>
+                         <p className="m-0 mt-2 text-muted">Deliver to {firstname} {lastname}{cityNprovince ? `, ${cityNprovince}` : ""}</p>
++                        {order.status && (
++                            <p className="m-0 mt-2 flex items-center justify-between gap-3">
++                                <span className="rounded-full bg-chip px-3 py-1 text-xs font-medium">{STATUS_LABEL[order.status]}</span>
++                                {order.status === "pending" && (
++                                    <Link href={`/shopping-cart/checkout/pay/${id}`} className="inline-flex min-h-11 items-center text-sm underline">Continue payment</Link>
++                                )}
++                            </p>
++                        )}
+                     </article>
+                 </li>
+                 )
+diff --git a/app/(root)/shopping-cart/checkout/page.tsx b/app/(root)/shopping-cart/checkout/page.tsx
+index a87a0ec..460fc27 100644
+--- a/app/(root)/shopping-cart/checkout/page.tsx
++++ b/app/(root)/shopping-cart/checkout/page.tsx
+@@ -2,7 +2,7 @@
+ import Link from "next/link";
+ import { useEffect, useState } from "react";
+ import { useRouter } from "next/navigation";
+-import { ChevronLeft, Printer } from "lucide-react";
++import { ChevronLeft, Printer, QrCode } from "lucide-react";
+ import ActionBar from "@/Frontend/components/common/ActionBar/ActionBar";
+ import { useCart } from "@/Frontend/hooks/CartContext";
+ import { usePersonalInfo } from "@/Frontend/hooks/usePersonalInfo";
+@@ -12,7 +12,10 @@ import Receipt, { type ReceiptData } from "@/Frontend/components/checkout/Receip
+ import { printReceipt } from "@/Frontend/lib/printReceipt";
+ 
+ type Session = "loading" | "signed-in" | "signed-out" | "error";
+-type OrderError = "details" | "signed-out" | "other" | null;
++type OrderError = "details" | "signed-out" | "unavailable" | "other" | null;
++
++// Set NEXT_PUBLIC_PAYWAY_ENABLED=true to pay with an ABA KHQR code. Anything else keeps the old demo "Place order" button.
++const PAYWAY_ENABLED = process.env.NEXT_PUBLIC_PAYWAY_ENABLED === "true";
+ 
+ // ?next= makes the profile page send people straight back here after they save
+ const next = encodeURIComponent(CHECKOUT_PATH);
+@@ -58,6 +61,36 @@ export default function Checkout(){
+ 
+     const total = items.reduce((sum, item) => sum + item.price, 0);
+ 
++    // ABA KHQR: the server creates a pending order and a QR code, then the payment page shows it and waits for the payment.
++    // The cart is NOT cleared here; the payment page clears it once the payment is confirmed.
++    async function payWithKhqr() {
++        if (submitting) return;
++        if (!isComplete) {
++            router.replace(fillDetailsHref);
++            return;
++        }
++        setSubmitting(true);
++        setOrderError(null);
++        try {
++            const res = await fetch("/api/payway/qr", {
++                method: "POST",
++                headers: { "Content-Type": "application/json" },
++                body: JSON.stringify({ items, userPersonalInfo: info }),
++            });
++            if (res.ok) {
++                const data = await res.json().catch(() => null);
++                if (typeof data?.orderId === "string") {
++                    router.push(`${CHECKOUT_PATH}/pay/${data.orderId}`);
++                    return; // keep the button disabled while the next page opens
++                }
++            }
++            setOrderError(res.status === 400 ? "details" : res.status === 401 ? "signed-out" : res.status === 503 ? "unavailable" : "other");
++        } catch {
++            setOrderError("other");
++        }
++        setSubmitting(false);
++    }
++
+     async function placeOrder() {
+         if (submitting) return;
+         // second safety net in case the details were cleared while this page was open
+@@ -201,7 +234,21 @@ export default function Checkout(){
+                 </div>
+             </section>
+ 
+-            <aside className="lg:sticky lg:top-24 lg:mt-5 lg:rounded-xl lg:bg-chip lg:p-5">
++            {PAYWAY_ENABLED && (
++                <section aria-labelledby="payment-title" className="mt-6 lg:col-start-1 lg:mt-0">
++                    <h2 id="payment-title" className="m-0 mb-2 text-base font-medium">Payment</h2>
++                    {/* only one way to pay, so this is a single card that is always selected */}
++                    <div className="flex items-center gap-3 rounded-xl border-2 border-foreground bg-surface p-4 text-sm">
++                        <QrCode size={28} aria-hidden="true" className="shrink-0" />
++                        <div>
++                            <p className="m-0 font-medium">ABA KHQR</p>
++                            <p className="m-0 text-muted">Scan with ABA Mobile or any KHQR banking app.</p>
++                        </div>
++                    </div>
++                </section>
++            )}
++
++            <aside className="lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-5 lg:rounded-xl lg:bg-chip lg:p-5">
+             <section aria-labelledby="summary-title" className="mt-6 lg:mt-0">
+                 <h2 id="summary-title" className="m-0 mb-2 text-base font-medium">Order summary</h2>
+                 <ul className="m-0 list-none rounded-xl border border-line bg-surface p-4 text-sm lg:border-0 lg:bg-transparent lg:p-0">
+@@ -216,7 +263,9 @@ export default function Checkout(){
+                         <span>{money(total)}</span>
+                     </li>
+                 </ul>
+-                <p className="m-0 mt-3 text-sm text-muted">Demo store: no real payment is taken.</p>
++                <p className="m-0 mt-3 text-sm text-muted">
++                    {PAYWAY_ENABLED ? "You will get a QR code to scan on the next page." : "Demo store: no real payment is taken."}
++                </p>
+             </section>
+ 
+             <div role="alert" className="mt-4 text-sm text-danger empty:hidden">
+@@ -226,17 +275,20 @@ export default function Checkout(){
+                 {orderError === "signed-out" && (
+                     <>Your session has expired. <Link href={signInHref} className="underline">Sign in again</Link>.</>
+                 )}
++                {orderError === "unavailable" && "Online payment is not available right now. Please try again later."}
+                 {orderError === "other" && "Something went wrong and your order was not placed. Please try again."}
+             </div>
+ 
+             <ActionBar className="lg:mt-4">
+                 <button
+                     type="button"
+-                    onClick={placeOrder}
++                    onClick={PAYWAY_ENABLED ? payWithKhqr : placeOrder}
+                     disabled={submitting}
+                     className="flex h-12 w-full items-center justify-center rounded-full bg-foreground text-sm font-medium text-background disabled:opacity-60"
+                 >
+-                    {submitting ? "Placing order..." : `Place order · ${money(total)}`}
++                    {PAYWAY_ENABLED
++                        ? (submitting ? "Creating QR code..." : `Pay with ABA KHQR · ${money(total)}`)
++                        : (submitting ? "Placing order..." : `Place order · ${money(total)}`)}
+                 </button>
+             </ActionBar>
+             </aside>
+diff --git a/app/(root)/shopping-cart/checkout/pay/[orderId]/page.tsx b/app/(root)/shopping-cart/checkout/pay/[orderId]/page.tsx
+new file mode 100644
+index 0000000..d87ca2b
+--- /dev/null
++++ b/app/(root)/shopping-cart/checkout/pay/[orderId]/page.tsx
+@@ -0,0 +1,32 @@
++import type { Metadata } from "next";
++import { Suspense } from "react";
++import PaywayPayment from "@/Frontend/components/checkout/PaywayPayment";
++
++export const metadata: Metadata = {
++    title: "Pay with ABA KHQR",
++    robots: { index: false, follow: false }, // a private page: keep it out of search results
++};
++
++// params is a promise in this version of Next.js and must be read inside <Suspense> (same pattern as app/(root)/[slug]/page.tsx)
++export default function PayPage({ params }: PageProps<"/shopping-cart/checkout/pay/[orderId]">) {
++    return (
++        <Suspense fallback={<PaymentSkeleton />}>
++            <Payment params={params} />
++        </Suspense>
++    );
++}
++
++async function Payment({ params }: Pick<PageProps<"/shopping-cart/checkout/pay/[orderId]">, "params">) {
++    const { orderId } = await params;
++    return <PaywayPayment orderId={orderId} />;
++}
++
++function PaymentSkeleton() {
++    return (
++        <div role="status" className="mx-auto w-full max-w-md animate-pulse px-4 pt-6">
++            <span className="sr-only">Loading payment</span>
++            <div className="mx-auto h-8 w-40 rounded bg-chip" />
++            <div className="mx-auto mt-6 aspect-square w-full max-w-72 rounded-2xl bg-chip" />
++        </div>
++    );
++}
+diff --git a/app/api/payway/callback/route.ts b/app/api/payway/callback/route.ts
+new file mode 100644
+index 0000000..5df30ff
+--- /dev/null
++++ b/app/api/payway/callback/route.ts
+@@ -0,0 +1,25 @@
++import { NextRequest, NextResponse } from "next/server";
++import { ConfirmPaywayPayment } from "@/Backend/services/ConfirmPaywayPayment";
++import { routeError } from "@/Backend/lib/routeError";
++
++// PayWay calls this when someone pays (only works once the bank has whitelisted the domain and PAYWAY_USE_CALLBACK=true).
++//
++// The body is NOT trusted. We only read the transaction id from it, then ask PayWay (Check Transaction API)
++// what really happened, exactly as PayWay's docs require. So a faked request can at most trigger a harmless check.
++// TODO once the bank confirms the signature header name: also verify PayWay's HMAC signature here.
++export async function POST(request: NextRequest) {
++    try {
++        const body = await request.json().catch(() => null);
++        const tranId = typeof body?.tran_id === "string" ? body.tran_id : "";
++        if (!/^[A-Za-z0-9_-]{1,40}$/.test(tranId)) {
++            return NextResponse.json({ message: "Invalid request" }, { status: 400 });
++        }
++        const outcome = await ConfirmPaywayPayment(tranId);
++        console.log(`[payway-callback] ${tranId}: ${outcome}`);
++        // 200 also for unknown ids, so the answer does not reveal which transaction ids exist
++        return NextResponse.json({ ok: true }, { status: 200 });
++    } catch (error) {
++        // a 5xx lets PayWay retry later
++        return routeError(error, "payway-callback");
++    }
++}
+diff --git a/app/api/payway/qr/route.ts b/app/api/payway/qr/route.ts
+new file mode 100644
+index 0000000..e1e88f9
+--- /dev/null
++++ b/app/api/payway/qr/route.ts
+@@ -0,0 +1,14 @@
++import { NextRequest, NextResponse } from "next/server";
++import { CreatePaywayPayment } from "@/Backend/services/CreatePaywayPayment";
++import { routeError } from "@/Backend/lib/routeError";
++
++// Checkout calls this: creates a pending order and an ABA KHQR code for it.
++export async function POST(request: NextRequest) {
++    try {
++        const body = await request.json();
++        const result = await CreatePaywayPayment(body);
++        return NextResponse.json(result, { status: 201 });
++    } catch (error) {
++        return routeError(error, "payway-qr");
++    }
++}
+diff --git a/app/api/payway/status/route.ts b/app/api/payway/status/route.ts
+new file mode 100644
+index 0000000..0b1f5aa
+--- /dev/null
++++ b/app/api/payway/status/route.ts
+@@ -0,0 +1,14 @@
++import { NextRequest, NextResponse } from "next/server";
++import { GetPaywayStatus } from "@/Backend/services/GetPaywayStatus";
++import { routeError } from "@/Backend/lib/routeError";
++
++// The payment page polls this: /api/payway/status?orderId=...
++export async function GET(request: NextRequest) {
++    try {
++        const orderId = request.nextUrl.searchParams.get("orderId") ?? "";
++        const result = await GetPaywayStatus(orderId);
++        return NextResponse.json(result, { status: 200, headers: { "Cache-Control": "no-store" } });
++    } catch (error) {
++        return routeError(error, "payway-status");
++    }
++}

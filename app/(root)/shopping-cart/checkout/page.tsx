@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Printer } from "lucide-react";
+import { ChevronLeft, Printer, QrCode } from "lucide-react";
 import ActionBar from "@/Frontend/components/common/ActionBar/ActionBar";
 import { useCart } from "@/Frontend/hooks/CartContext";
 import { usePersonalInfo } from "@/Frontend/hooks/usePersonalInfo";
@@ -12,7 +12,10 @@ import Receipt, { type ReceiptData } from "@/Frontend/components/checkout/Receip
 import { printReceipt } from "@/Frontend/lib/printReceipt";
 
 type Session = "loading" | "signed-in" | "signed-out" | "error";
-type OrderError = "details" | "signed-out" | "other" | null;
+type OrderError = "details" | "signed-out" | "unavailable" | "other" | null;
+
+// Set NEXT_PUBLIC_PAYWAY_ENABLED=true to pay with an ABA KHQR code. Anything else keeps the old demo "Place order" button.
+const PAYWAY_ENABLED = process.env.NEXT_PUBLIC_PAYWAY_ENABLED === "true";
 
 // ?next= makes the profile page send people straight back here after they save
 const next = encodeURIComponent(CHECKOUT_PATH);
@@ -57,6 +60,36 @@ export default function Checkout(){
     }, [mustFillDetails, router]);
 
     const total = items.reduce((sum, item) => sum + item.price, 0);
+
+    // ABA KHQR: the server creates a pending order and a QR code, then the payment page shows it and waits for the payment.
+    // The cart is NOT cleared here; the payment page clears it once the payment is confirmed.
+    async function payWithKhqr() {
+        if (submitting) return;
+        if (!isComplete) {
+            router.replace(fillDetailsHref);
+            return;
+        }
+        setSubmitting(true);
+        setOrderError(null);
+        try {
+            const res = await fetch("/api/payway/qr", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ items, userPersonalInfo: info }),
+            });
+            if (res.ok) {
+                const data = await res.json().catch(() => null);
+                if (typeof data?.orderId === "string") {
+                    router.push(`${CHECKOUT_PATH}/pay/${data.orderId}`);
+                    return; // keep the button disabled while the next page opens
+                }
+            }
+            setOrderError(res.status === 400 ? "details" : res.status === 401 ? "signed-out" : res.status === 503 ? "unavailable" : "other");
+        } catch {
+            setOrderError("other");
+        }
+        setSubmitting(false);
+    }
 
     async function placeOrder() {
         if (submitting) return;
@@ -201,7 +234,21 @@ export default function Checkout(){
                 </div>
             </section>
 
-            <aside className="lg:sticky lg:top-24 lg:mt-5 lg:rounded-xl lg:bg-chip lg:p-5">
+            {PAYWAY_ENABLED && (
+                <section aria-labelledby="payment-title" className="mt-6 lg:col-start-1 lg:mt-0">
+                    <h2 id="payment-title" className="m-0 mb-2 text-base font-medium">Payment</h2>
+                    {/* only one way to pay, so this is a single card that is always selected */}
+                    <div className="flex items-center gap-3 rounded-xl border-2 border-foreground bg-surface p-4 text-sm">
+                        <QrCode size={28} aria-hidden="true" className="shrink-0" />
+                        <div>
+                            <p className="m-0 font-medium">ABA KHQR</p>
+                            <p className="m-0 text-muted">Scan with ABA Mobile or any KHQR banking app.</p>
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            <aside className="lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-5 lg:rounded-xl lg:bg-chip lg:p-5">
             <section aria-labelledby="summary-title" className="mt-6 lg:mt-0">
                 <h2 id="summary-title" className="m-0 mb-2 text-base font-medium">Order summary</h2>
                 <ul className="m-0 list-none rounded-xl border border-line bg-surface p-4 text-sm lg:border-0 lg:bg-transparent lg:p-0">
@@ -216,7 +263,9 @@ export default function Checkout(){
                         <span>{money(total)}</span>
                     </li>
                 </ul>
-                <p className="m-0 mt-3 text-sm text-muted">Demo store: no real payment is taken.</p>
+                <p className="m-0 mt-3 text-sm text-muted">
+                    {PAYWAY_ENABLED ? "You will get a QR code to scan on the next page." : "Demo store: no real payment is taken."}
+                </p>
             </section>
 
             <div role="alert" className="mt-4 text-sm text-danger empty:hidden">
@@ -226,17 +275,20 @@ export default function Checkout(){
                 {orderError === "signed-out" && (
                     <>Your session has expired. <Link href={signInHref} className="underline">Sign in again</Link>.</>
                 )}
+                {orderError === "unavailable" && "Online payment is not available right now. Please try again later."}
                 {orderError === "other" && "Something went wrong and your order was not placed. Please try again."}
             </div>
 
             <ActionBar className="lg:mt-4">
                 <button
                     type="button"
-                    onClick={placeOrder}
+                    onClick={PAYWAY_ENABLED ? payWithKhqr : placeOrder}
                     disabled={submitting}
                     className="flex h-12 w-full items-center justify-center rounded-full bg-foreground text-sm font-medium text-background disabled:opacity-60"
                 >
-                    {submitting ? "Placing order..." : `Place order · ${money(total)}`}
+                    {PAYWAY_ENABLED
+                        ? (submitting ? "Creating QR code..." : `Pay with ABA KHQR · ${money(total)}`)
+                        : (submitting ? "Placing order..." : `Place order · ${money(total)}`)}
                 </button>
             </ActionBar>
             </aside>

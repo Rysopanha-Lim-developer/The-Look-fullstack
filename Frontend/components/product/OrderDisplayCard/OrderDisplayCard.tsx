@@ -1,5 +1,14 @@
+import Link from "next/link"
 import { Order } from "@/Backend/models/order.model"
 import { money } from "@/Frontend/lib/money"
+
+// Orders made before online payment existed have no status, so they show no label.
+const STATUS_LABEL: Record<NonNullable<Order["status"]>, string> = {
+    pending: "Awaiting payment",
+    paid: "Paid",
+    expired: "Expired",
+    failed: "Payment failed",
+};
 
 export default function OrderDisplayCard({props}:{props: Order[]}){
     return(
@@ -26,6 +35,14 @@ export default function OrderDisplayCard({props}:{props: Order[]}){
                         <p className="m-0 mt-1 text-muted">{formattedDate}</p>
                         <p className="m-0 text-muted">{itemCount} {itemCount === 1 ? "item" : "items"}</p>
                         <p className="m-0 mt-2 text-muted">Deliver to {firstname} {lastname}{cityNprovince ? `, ${cityNprovince}` : ""}</p>
+                        {order.status && (
+                            <p className="m-0 mt-2 flex items-center justify-between gap-3">
+                                <span className="rounded-full bg-chip px-3 py-1 text-xs font-medium">{STATUS_LABEL[order.status]}</span>
+                                {order.status === "pending" && (
+                                    <Link href={`/shopping-cart/checkout/pay/${id}`} className="inline-flex min-h-11 items-center text-sm underline">Continue payment</Link>
+                                )}
+                            </p>
+                        )}
                     </article>
                 </li>
                 )

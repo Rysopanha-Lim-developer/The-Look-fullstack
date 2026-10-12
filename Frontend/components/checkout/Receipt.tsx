@@ -10,6 +10,7 @@ export type ReceiptData = {
     info: UserPersonalInfo;
     items: { name: string; color?: string; price: number }[];
     total: number;
+    paymentLabel?: string; // e.g. "Paid with ABA KHQR"; shown under the date when the order was paid online
 };
 
 const noopSubscribe = () => () => {};
@@ -41,6 +42,7 @@ export default function Receipt({ receipt }: { receipt: ReceiptData }) {
                 <div>
                     {receipt.orderId && <p className="m-0 font-medium">Order #{receipt.orderId.slice(-6).toUpperCase()}</p>}
                     <p className="m-0">{date} (Phnom Penh time)</p>
+                    {receipt.paymentLabel && <p className="m-0">{receipt.paymentLabel}</p>}
                 </div>
                 <div className="text-right">
                     <p className="m-0 font-medium">Delivery details</p>
