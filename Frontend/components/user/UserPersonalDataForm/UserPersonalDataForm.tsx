@@ -8,6 +8,7 @@ import FormField from "@/Frontend/components/common/FormField";
 import { usePersonalInfo } from "@/Frontend/hooks/usePersonalInfo";
 import {
     FIELD_ORDER,
+    MAX_LENGTH,
     getPersonalInfoErrors,
     safeNextPath,
     type PersonalInfoField,
@@ -96,7 +97,7 @@ function ProfileFields({ saved, savedIsComplete, save }: ProfileFieldsProps) {
             onChange={event => change(field, event.target.value)}
             onBlur={() => setTouched(current => ({ ...current, [field]: true }))}
             error={errorFor(field)}
-            maxLength={200}
+            maxLength={MAX_LENGTH[field]}
             {...extra}
         />
     );
@@ -162,7 +163,7 @@ function ProfileFields({ saved, savedIsComplete, save }: ProfileFieldsProps) {
                     {text("commune", "Commune")}
                 </div>
                 {text("street", "Street", { autoComplete: "street-address" })}
-                {text("telephone", "Phone", { type: "tel", inputMode: "tel", autoComplete: "tel", maxLength: 15 })}
+                {text("telephone", "Phone", { type: "tel", inputMode: "tel", autoComplete: "tel" })}
                 {text("email", "Email", { type: "email", inputMode: "email", autoComplete: "email" })}
 
                 <p role="status" className="m-0 min-h-5 text-sm">

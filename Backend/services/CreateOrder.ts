@@ -4,6 +4,14 @@ import { Product, ProductModel } from "@/Backend/models/product.model";
 import { HttpError } from "@/Backend/lib/errors";
 import { GetCurrentAccount } from "@/Backend/services/CurrentAccount";
 import z from "zod";
+import {
+    NAME_MESSAGE,
+    NAME_PATTERN,
+    PERSONAL_INFO_MAX_LENGTH as MAX,
+    PHONE_MESSAGE,
+    PHONE_PATTERN,
+    hasEnoughPhoneDigits,
+} from "@/Backend/lib/personalInfoRules";
 
 export type CreateOrderPayload = {
     items: Product[];
@@ -12,16 +20,18 @@ export type CreateOrderPayload = {
 
 
 
-const personalInfoSchema = z.object({
-    firstname: z.string().trim().min(1).max(50),
-    lastname: z.string().trim().min(1).max(50),
-    gender: z.string().max(10),
-    cityNprovince: z.string().trim().min(1).max(100),
-    district: z.string().trim().min(1).max(100),
-    commune: z.string().trim().min(1).max(100),
-    street: z.string().trim().min(1).max(200),
-    telephone: z.string().trim().regex(/^[0-9+\s-]{8,15}$/, "Invalid phone number"),
-    email: z.email(),
+// Limits and patterns live in Backend/lib/personalInfoRules.ts (shared with the browser check and the form inputs).
+// Exported so a test can check this schema against the browser check.
+export const personalInfoSchema = z.object({
+    firstname: z.string().trim().min(1).max(MAX.firstname).regex(NAME_PATTERN, NAME_MESSAGE),
+    lastname: z.string().trim().min(1).max(MAX.lastname).regex(NAME_PATTERN, NAME_MESSAGE),
+    gender: z.string().max(MAX.gender),
+    cityNprovince: z.string().trim().min(1).max(MAX.cityNprovince),
+    district: z.string().trim().min(1).max(MAX.district),
+    commune: z.string().trim().min(1).max(MAX.commune),
+    street: z.string().trim().min(1).max(MAX.street),
+    telephone: z.string().trim().regex(PHONE_PATTERN, PHONE_MESSAGE).refine(hasEnoughPhoneDigits, PHONE_MESSAGE),
+    email: z.email().max(MAX.email),
 });
 
 async function GetRealProducts(items: Product[]) {

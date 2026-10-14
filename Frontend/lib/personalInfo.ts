@@ -1,4 +1,14 @@
 import type { UserPersonalInfo } from "@/Backend/lib/Types/generalTypes.module";
+import {
+    EMAIL_MESSAGE,
+    EMAIL_PATTERN,
+    NAME_MESSAGE,
+    NAME_PATTERN,
+    PERSONAL_INFO_MAX_LENGTH,
+    PHONE_MESSAGE,
+    PHONE_PATTERN,
+    hasEnoughPhoneDigits,
+} from "@/Backend/lib/personalInfoRules";
 
 export type PersonalInfoField = keyof UserPersonalInfo;
 
@@ -35,19 +45,10 @@ const FIELD_LABELS: Record<PersonalInfoField, string> = {
     email: "email",
 };
 
-// Same limits as the zod schema in Backend/services/CreateOrder.ts, so most problems are caught before sending.
-// The server is still the real gatekeeper; this check is only here to give people quick, friendly feedback.
-const MAX_LENGTH: Record<PersonalInfoField, number> = {
-    firstname: 50,
-    lastname: 50,
-    gender: 10,
-    cityNprovince: 100,
-    district: 100,
-    commune: 100,
-    street: 200,
-    telephone: 15,
-    email: 254,
-};
+// The limits and patterns come from Backend/lib/personalInfoRules.ts, the same file the server check and the form inputs use,
+// so most problems are caught before sending. The server is still the real gatekeeper; this check is only here to give
+// people quick, friendly feedback.
+export const MAX_LENGTH = PERSONAL_INFO_MAX_LENGTH;
 
 export type PersonalInfoErrors = Partial<Record<PersonalInfoField, string>>;
 
@@ -63,11 +64,15 @@ export function getPersonalInfoErrors(info: UserPersonalInfo): PersonalInfoError
         }
     }
 
-    if (!errors.telephone && !/^[0-9+\s-]{8,15}$/.test(info.telephone.trim())) {
-        errors.telephone = "Use 8 to 15 digits (you can use +, spaces and -)";
+    for (const field of ["firstname", "lastname"] as const) {
+        if (!errors[field] && !NAME_PATTERN.test(info[field].trim())) errors[field] = NAME_MESSAGE;
     }
-    if (!errors.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(info.email.trim())) {
-        errors.email = "Enter a valid email address";
+    if (!errors.telephone) {
+        const phone = info.telephone.trim();
+        if (!PHONE_PATTERN.test(phone) || !hasEnoughPhoneDigits(phone)) errors.telephone = PHONE_MESSAGE;
+    }
+    if (!errors.email && !EMAIL_PATTERN.test(info.email.trim())) {
+        errors.email = EMAIL_MESSAGE;
     }
 
     return errors;

@@ -113,6 +113,32 @@ type QrResponse = {
     status?: { code?: string; message?: string; trace_id?: string };
 };
 
+// ---------- PayWay's field limits (QR API page: https://developer.payway.com.kh/qr-api-14530840e0) ----------
+// The payer fields are optional for PayWay, so a value that cannot be made valid is left out instead of failing the payment.
+
+// Names: up to 20 characters, no numbers or special characters. \p{L} = letters, \p{M} = combining marks (Khmer vowel signs are marks).
+const payerName = (text: string) =>
+    Array.from(text.normalize("NFKC").replace(/[^\p{L}\p{M}\s]/gu, "").replace(/\s+/g, " ").trim()).slice(0, 20).join("") || "Customer";
+
+// Email: up to 50 characters. A cut-off address would be a different address, so a longer one is not sent at all.
+const payerEmail = (text: string) => {
+    const email = text.trim();
+    return email.length > 0 && email.length <= 50 ? email : undefined;
+};
+
+// Phone: digits and + only, up to 20 characters.
+const payerPhone = (text: string) => text.replace(/[^0-9+]/g, "").slice(0, 20) || undefined;
+
+// Items: PayWay says this is only a description (price and quantity are not used for anything) but lists 500 characters
+// as the limit for the Base64 text. A long cart is replaced by one summary line instead of being refused.
+const ITEMS_MAX_LENGTH = 500;
+function encodeItems(items: QrInput["items"], amount: number): string {
+    const full = base64(JSON.stringify(items));
+    if (full.length <= ITEMS_MAX_LENGTH) return full;
+    return base64(JSON.stringify([{ name: `Order of ${items.length} items`, quantity: 1, price: amount }]));
+}
+
+
 export async function generateQr(input: QrInput): Promise<QrResult> {
     const { merchantId, apiKey } = getConfig();
 
@@ -121,15 +147,15 @@ export async function generateQr(input: QrInput): Promise<QrResult> {
         merchant_id: merchantId,
         tran_id: input.tranId,
         amount: input.amount.toFixed(2), // the same text goes into the hash and the request, so "5.50" never becomes "5.5"
-        items: base64(JSON.stringify(input.items)),
-        first_name: input.customer.firstName,
-        last_name: input.customer.lastName,
-        email: input.customer.email,
-        phone: input.customer.phone.replace(/[^0-9+]/g, ""),
+        items: encodeItems(input.items, input.amount),
+        first_name: payerName(input.customer.firstName),
+        last_name: payerName(input.customer.lastName),
+        email: payerEmail(input.customer.email),
+        phone: payerPhone(input.customer.phone),
         purchase_type: "purchase",
         payment_option: "abapay_khqr",
         currency: PAYWAY_CURRENCY,
-        lifetime: input.lifetimeMinutes,
+        lifetime: input.lifetimeMinutes
     };
 
     // PayWay can call us back when someone pays, but only for domains the bank has whitelisted.
@@ -143,6 +169,10 @@ export async function generateQr(input: QrInput): Promise<QrResult> {
     const answer = await post<QrResponse>("generate-qr", { ...body, hash: sign(body, QR_HASH_ORDER, apiKey) });
 
     const code = String(answer.status?.code ?? "");
+    if (code === "429") {
+        console.error("[payway] generate-qr: attempt limit reached:", { message: answer.status?.message, trace_id: answer.status?.trace_id });
+        throw new HttpError("Too many payment attempts. Please wait a few minutes and try again.", 429);
+    }
     if ((code !== "0" && code !== "00") || !answer.qrString || !answer.qrImage || !answer.abapay_deeplink) {
         console.error("[payway] generate-qr refused:", { code, message: answer.status?.message, trace_id: answer.status?.trace_id });
         throw new HttpError("We could not create the payment code. Please try again.", 502);
@@ -160,8 +190,17 @@ export type CheckResult = {
 };
 
 type CheckResponse = {
-    data?: { payment_status?: string; payment_amount?: number; total_amount?: number; payment_currency?: string; apv?: string };
-    status?: { code?: string; message?: string };
+    data?: { 
+        payment_status?: string; 
+        payment_amount?: number; 
+        total_amount?: number; 
+        payment_currency?: string; 
+        apv?: string 
+    };
+    status?: { 
+        code?: string; 
+        message?: string 
+    };
 };
 
 export async function checkTransaction(tranId: string): Promise<CheckResult> {
