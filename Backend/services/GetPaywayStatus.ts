@@ -40,9 +40,20 @@ export async function GetPaywayStatus(orderId: string): Promise<PaymentStatus> {
     if (!order || !order.payment?.tranId) throw new HttpError("Order not found.", 404);
 
     if (order.status === "pending") {
-        const lastChecked = order.payment.lastCheckedAt ? new Date(order.payment.lastCheckedAt).getTime() : 0;
-        if (Date.now() - lastChecked >= MIN_MS_BETWEEN_PAYWAY_CHECKS) {
-            await OrderModel.updateOne({ _id: orderId }, { $set: { "payment.lastCheckedAt": new Date() } });
+        const claimed = await OrderModel.findOneAndUpdate(
+            {
+                _id: orderId,
+                accountId,
+                status: "pending",
+                $or: [
+                    { "payment.lastCheckedAt": null }, // null also matches "the field does not exist yet"
+                    { "payment.lastCheckedAt": { $lt: new Date(Date.now() - MIN_MS_BETWEEN_PAYWAY_CHECKS) } },
+                ],
+            },
+            { $set: { "payment.lastCheckedAt": new Date() } },
+        ).select("_id").lean();
+
+        if (claimed) {
             try {
                 await ConfirmPaywayPayment(order.payment.tranId);
             } catch (error) {
