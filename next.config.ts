@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true, //This line eliminate the need of useMemo React hook
 
   cacheComponents: true, //This enable caching system 'use cache' for cache boundaries 
+  output: "standalone",
 };
 
 export default nextConfig;

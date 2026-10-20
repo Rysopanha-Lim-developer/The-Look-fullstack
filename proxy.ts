@@ -6,8 +6,8 @@ import { dbConnection } from "@/Backend/lib/dbConnection";
 
 // What to do when nobody is signed in. Account pages send people to /login from here.
 // Checkout does NOT redirect from here: the browser also runs this file for <Link> prefetches and keeps a redirect for a
-// few minutes, so after signing in the Checkout button kept sending people back to /login. The checkout page checks the
-// session itself and sends signed-out people to /login?next=... (see checkout/page.tsx).
+// few minutes, so after signing in the Checkout button kept sending people back to /login. 
+// ...The checkout page checks the session itself and shows a "Sign in" button that leads to /login?next=... (see checkout/page.tsx).
 // Checkout is still listed in the matcher so an expired access token is silently renewed below, as before.
 function signedOut(req: NextRequest) {
     if (req.nextUrl.pathname.startsWith("/account")) return NextResponse.redirect(new URL("/login", req.url));
@@ -29,7 +29,7 @@ export async function proxy(req: NextRequest) {
 
     if (!refreshToken) {
         return signedOut(req);
-    }
+    }   
 
     try {
         const validRefreshToken = await verifyRefreshToken(refreshToken);

@@ -27,6 +27,7 @@ async function UserProfile(){
             payload = null;
         }
     }
+    //This redirect is wrong cus it redirect base on access token but every thing work because proxy.ts intercept the request first
     if (!payload) redirect("/login");
 
     return(
