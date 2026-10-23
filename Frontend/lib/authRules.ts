@@ -1,5 +1,8 @@
 // These mirror the zod schema on the server (Backend/services/CreateNewUser.ts), which runs for BOTH login and register.
 // Checking here first gives people instant, clear feedback. The server still has the final say.
+import { z } from "zod";
+
+const emailSchema = z.email();
 export const USERNAME_MIN = 5;
 export const USERNAME_MAX = 12;
 
@@ -24,12 +27,12 @@ export function getUsernameError(username: string): string | undefined {
 export function getEmailError(email: string): string | undefined {
     const value = email.trim();
     if (value.length === 0) return "Enter your email address";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Enter a valid email address";
+    if (!emailSchema.safeParse(value).success) return "Enter a valid email address";
 }
 
 // Used by the login form (register shows the live checklist instead)
 export function getLoginPasswordError(password: string): string | undefined {
-    if (password.length === 0) return "Enter your password";
+    if (password.trim().length === 0) return "Enter your password";
     if (!isPasswordValid(password)) {
         return "Check your password: 8 to 10 characters with a lowercase and an uppercase letter, a number and a special character";
     }
