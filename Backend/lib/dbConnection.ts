@@ -2,12 +2,6 @@
 
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if(!MONGODB_URI){
-    throw new Error("Please provide a vaild URI");
-}
-
 type MongooseCache = {
     conn: typeof mongoose | null
     promise: Promise<typeof mongoose> | null
@@ -26,6 +20,13 @@ if(!cached){
 }
 
 export async function dbConnection():Promise<typeof mongoose> {
+
+    const MONGODB_URI = process.env.MONGODB_URI;
+
+    if(!MONGODB_URI){
+        throw new Error("Please provide a vaild URI");
+    }
+
     if(cached!.conn){
         return cached!.conn;
     }
